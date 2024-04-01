@@ -1,11 +1,14 @@
 <script lang="ts">
-    import axios from 'axios';
-
-    const apiUrl = import.meta.env.VITE_API_URL;
-
-    axios(`${apiUrl}/`)
+    import axios from "axios";
+    import { apiUrl } from "./util";
 </script>
 
 <main>
-    <p class="text-red-500">{apiUrl}</p>
+    {#await axios(apiUrl("/"))}
+    <p>Fetching...</p>
+    {:then res} 
+        <p class="m-4 font-bold text-xl">
+            {res.data}
+        </p>
+    {/await}
 </main>

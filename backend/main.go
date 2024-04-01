@@ -7,6 +7,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+
+	"gamelist-server/api"
 )
 
 const APP_NAME string = "gamelist"
@@ -26,9 +28,9 @@ func main() {
 	app.Use(cors.New())
 	app.Use(logger.New())
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("hello world")
-	})
+	app.Static("/", "./frontend")
+
+	api.Make(app)
 
 	address := fmt.Sprintf(":%s", port)
 
