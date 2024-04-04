@@ -1,38 +1,43 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"os"
+
+	"gamelist-server/app"
+	"gamelist-server/routes"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-
-	"gamelist-server/api"
+	"github.com/joho/godotenv"
 )
 
-const APP_NAME string = "gamelist"
-const APP_VERSION string = "0.1"
-
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	port, ok := os.LookupEnv("PORT")
 	if !ok {
 		port = "5070"
 	}
 
-	app := fiber.New(fiber.Config{
-		AppName:       fmt.Sprintf("%s v%s", APP_NAME, APP_VERSION),
-		CaseSensitive: false,
-	})
+	ctx := context.Background()
+	app.Init(ctx)
 
-	app.Use(cors.New())
-	app.Use(logger.New())
+	server := fiber.New()
 
-	app.Static("/", "./frontend")
+	server.Use(logger.New())
+	server.Use(cors.New())
 
-	api.Make(app)
+	server.Static("/", "./frontend")
+
+	routes.Setup(server)
 
 	address := fmt.Sprintf(":%s", port)
-
-	app.Listen(address)
+	log.Fatal(server.Listen(address))
 }
