@@ -1,48 +1,48 @@
 <script lang="ts">
     import { Router } from "svelte-routing";
     import Navbar from "./components/navbar/Navbar.svelte";
+    import NavbarLink from "./components/navbar/NavbarLink.svelte";
+    import NavbarSeparator from "./components/navbar/NavbarSeparator.svelte";
 
     // TODO: Debug clear, Remove in production
     console.clear()
-
-    const navbarElements = [
-        {
-            icon: "ion:game-controller",
-            text: "Active Games",
-            route: "/",
-        },
-        {
-            label: "Games",
-            icon: "lucide:list-start",
-            text: "Game Lists",
-            route: "/games",
-        },
-        {
-            icon: "bxs:calendar",
-            text: "Upcoming Games",
-            route: "/upcoming",
-        },
-        {
-            icon: "fa6-solid:dumpster",
-            text: "Backlog",
-            route: "/backlog",
-        },
-        {
-            icon: "icons8:idea",
-            text: "Suggestions",
-            route: "/suggestions",
-        },
-        {
-            label: "Archives",
-            icon: "fluent-mdl2:completed-solid",
-            text: "Completions",
-            route: "/completions",
-        },
-    ];
 </script>
 
 <Router>
     <main class="flex flex-row absolute inset-0">
-        <Navbar elements={navbarElements} />
+        <Navbar>
+            <NavbarLink
+                label="Active Games"
+                icon="ion:game-controller"
+                route="/"
+            />
+            <NavbarSeparator label="Games" />
+            <NavbarLink
+                label="Game Lists"
+                icon="lucide:list-start"
+                route="/games"
+            />
+            <NavbarLink
+                label="Upcoming Games"
+                icon="bxs:calendar"
+                route="/upcoming"
+            />
+            <NavbarLink
+                label="Backlog"
+                icon="fa6-solid:dumpster"
+                route="/backlog"
+            />
+            <NavbarLink
+                label="Suggestions"
+                icon="icons8:idea"
+                route="/suggestions"
+            />
+            <NavbarSeparator label="Archives" />
+            <NavbarLink
+                label="Completions"
+                icon="fluent-mdl2:completed-solid"
+                route="/completions"
+            />
+        </Navbar>
     </main>
 </Router>
