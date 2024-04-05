@@ -3,6 +3,6 @@
     export let label: string;
 </script>
 
-<div class="w-full mt-4 text-text font-bungee text-left">
+<div class="select-none w-full mt-4 font-bungee text-left">
     {label}
 </div>

@@ -1,8 +1,11 @@
 <script lang="ts">
-    import { Router } from "svelte-routing";
+    import { Route, Router } from "svelte-routing";
     import Navbar from "./components/navbar/Navbar.svelte";
     import NavbarLink from "./components/navbar/NavbarLink.svelte";
     import NavbarSeparator from "./components/navbar/NavbarSeparator.svelte";
+
+    // Pages
+    import ActiveGames from "./pages/ActiveGames.svelte";
 
     // TODO: Debug clear, Remove in production
     console.clear()
@@ -44,5 +47,8 @@
                 route="/completions"
             />
         </Navbar>
+        <div class="w-full h-full">
+            <Route path="/" component={ActiveGames} />
+        </div>
     </main>
 </Router>
