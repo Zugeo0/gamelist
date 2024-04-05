@@ -5,10 +5,7 @@
     import NavbarSeparator from "./components/navbar/NavbarSeparator.svelte";
 
     // Pages
-    import ActiveGames from "./pages/ActiveGames.svelte";
-
-    // TODO: Debug clear, Remove in production
-    console.clear()
+    import ActiveGames from "./menus/ActiveGames.svelte";
 </script>
 
 <Router>

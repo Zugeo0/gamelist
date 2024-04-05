@@ -4,6 +4,7 @@
     import Dropdown from "../components/Dropdown.svelte";
     import Rating from "../components/Rating.svelte";
     import { getGameLists, type GameList, getFrontGameInList, type GameData, type ActiveGame } from "../api";
+    import EditMenu from "./EditMenu.svelte";
 
     interface GameInfo {
         title: string,
@@ -13,6 +14,7 @@
     }
 
     let activeList: GameList | null = null;
+    let editMenuOpen: boolean = false;
 
     async function setActiveList(gamelists: GameList[]) {
         let id = localStorage.activeGamesGameList
@@ -104,20 +106,36 @@
                             <Icon width={16} icon="fa6-solid:dumpster" />
                         </button>
 
+                        <!-- Edit Button -->
+                        <button on:click={() => editMenuOpen = true} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-base">
+                            Edit
+                            <Icon width={16} icon="material-symbols:edit" />
+                        </button>
+
                         <Rating class="mx-2" rating={game.state.user_rating ?? 0} max={5} />
                     {/if}
                 </div>
             </div>
+
+            <!-- Game Info -->
             <div class="h-full p-4 pt-8">
                 {#if game}
+                    <!-- Game title -->
                     <h1 class="text-5xl font-bungee text-white mb-4">
                         {game.data.name}
                     </h1>
+
+                    <!-- Game description -->
                     <p>
                         {game.data.description || "No description"}
                     </p>
                 {/if}
             </div>
+            {#if game}
+                {#if editMenuOpen}
+                    <EditMenu game={game} on:close={() => editMenuOpen = false} />
+                {/if}
+            {/if}
         {/await}
     </div>
 {/await}

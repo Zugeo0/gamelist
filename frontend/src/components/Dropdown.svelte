@@ -1,3 +1,3 @@
-<select class="h-full px-4 bg-mantle font-bold">
+<select class="h-full px-4 bg-crust font-bold">
     <slot />
 </select>
