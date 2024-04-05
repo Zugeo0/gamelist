@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Navbar from "./lib/navbar/Navbar.svelte";
+    import Navbar from "./components/navbar/Navbar.svelte";
 </script>
 
 <main class="flex flex-row absolute inset-0">
