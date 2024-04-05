@@ -5,8 +5,15 @@ export default {
     "src/**/*.{html,js,ts,jsx,tsx,svelte}"
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        exo: ['Exo Variable', 'sans-serif'],
+        bungee: ['Bungee', 'system-ui']
+      }
+    },
   },
-  plugins: [],
+  plugins: [require("@catppuccin/tailwindcss")({
+    defaultFlavour: "mocha"
+  })],
 }
 

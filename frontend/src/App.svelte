@@ -1,14 +1,7 @@
 <script lang="ts">
-    import axios from "axios";
-    import { apiUrl } from "./util";
+    import Navbar from "./lib/navbar/Navbar.svelte";
 </script>
 
-<main>
-    {#await axios(apiUrl("/"))}
-    <p>Fetching...</p>
-    {:then res} 
-        <p class="m-4 font-bold text-xl">
-            {res.data}
-        </p>
-    {/await}
+<main class="flex flex-row absolute inset-0">
+    <Navbar />
 </main>
