@@ -48,6 +48,12 @@ export async function createGameList(name: string): Promise<GameList> {
     };
 }
 
+export async function deleteGameList(id: number) {
+    await axios(apiPath + "/api/gamelists/" + id, {
+        method: "DELETE",
+    });
+}
+
 export async function getGameLists(): Promise<GameList[]> {
     let response = await axios(apiPath + "/api/gamelists")
     let gamelists: GameList[] = [];

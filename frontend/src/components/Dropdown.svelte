@@ -1,7 +1,7 @@
 
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import { createGameList, getGameLists, type GameList } from "../api";
+    import { createGameList, getGameLists, type GameList, deleteGameList } from "../api";
     import { createEventDispatcher } from "svelte";
 
     export let gamelists: GameList[];
@@ -29,6 +29,14 @@
 
         dispatch("listUpdated");
     }
+
+    async function deleteList(id: number) {
+        let list = gamelists.find(list => list.id == id)
+        if (confirm(`Are you sure you want to delete '${list?.name}'?`)) {
+            await deleteGameList(id);
+            gamelists = gamelists.filter(list => list.id != id);
+        }
+    }
 </script>
 
 <div class="relative h-full min-w-32 w-fit">
@@ -43,9 +51,14 @@
     {#if selectionOpen}
         <div class="absolute top-full left-0 flex flex-col bg-crust min-w-full w-fit text-nowrap text-left border border-black">
             {#each gamelists as gamelist, i}
-                <button on:click={() => select(i)} class="hover:bg-mantle select-none w-full text-left py-1 px-4">
-                    {gamelist.name}
-                </button>
+                <div class="group hover:bg-mantle select-none w-full flex flex-row">
+                    <button on:click={() => select(i)} class="hover:bg-mantle select-none w-full text-left py-1 px-4">
+                        {gamelist.name}
+                    </button>
+                    <button on:click={() => deleteList(gamelist.id)} class="opacity-0 group-hover:opacity-100 hover:bg-red select-none px-2 text-left hover:text-white">
+                        <Icon icon="material-symbols:delete" />
+                    </button>
+                </div>
             {/each}
             <button on:click={() => createList()} class="h-6 p-1 gap-2 hover:bg-mantle flex justify-center items-center border-t border-t-black">
                 <Icon icon="tabler:plus" />
