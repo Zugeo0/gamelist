@@ -34,6 +34,20 @@ export interface ActiveGame {
     state: GameState,
 }
 
+export async function createGameList(name: string): Promise<GameList> {
+    let response = await axios(apiPath + "/api/gamelists", {
+        method: "POST",
+        data: {
+            name: name
+        },
+    });
+
+    return {
+        id: response.data.ID,
+        name: response.data.Name,
+    };
+}
+
 export async function getGameLists(): Promise<GameList[]> {
     let response = await axios(apiPath + "/api/gamelists")
     let gamelists: GameList[] = [];

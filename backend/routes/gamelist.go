@@ -31,12 +31,12 @@ func createGameList(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	_, err := app.CreateGameList(payload.Name)
+	list, err := app.CreateGameList(payload.Name)
 	if err != nil {
 		return err
 	}
 
-	return ctx.SendStatus(201)
+	return ctx.Status(201).JSON(list)
 }
 
 func updateGameList(ctx *fiber.Ctx) error {
@@ -83,7 +83,10 @@ func getFrontGame(ctx *fiber.Ctx) error {
 
 	game, err := app.GetFrontGameInList(int32(id))
 	if err != nil {
-		return err
+		// TODD: Filter error
+		// return err
+
+		return ctx.Status(200).JSON(nil)
 	}
 
 	return ctx.Status(200).JSON(game)

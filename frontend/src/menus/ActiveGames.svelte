@@ -9,125 +9,99 @@
     let activeList: GameList | null = null;
     let editMenuOpen: boolean = false;
 
-    async function setActiveList(gamelists: GameList[]) {
-        let id = localStorage.activeGamesGameList
+    let gamelists: GameList[];
+    let game: ActiveGame | null;
 
-        if (id == null) {
-            console.log("test")
-            id = gamelists[0]?.id ?? null;
+    async function refresh() {
+        gamelists = await getGameLists();
+        console.log(gamelists);
+        //gamelists = [ { id: 0, name: "Main" }, { id: 1, name: "Side" }, { id: 2, name: "Co-op" }, ];
 
-            if (id === null) {
-                return;
-            }
-
-            localStorage.activeGamesGameList = activeList;
+        if (gamelists.length == 0) {
+            return;
         }
 
-        activeList = gamelists.find(gl => gl.id == id)!;
-        localStorage.activeGamesGameList = id;
-    }
-
-    async function fetchGameLists(): Promise<GameList[]> {
-        let gamelists = await getGameLists();
-        await setActiveList(gamelists)
-        return gamelists
-    }
-
-    async function fetchFrontGame(): Promise<ActiveGame | null> {
-        if (!activeList) {
-            return null;
-        }
-
-        return await getFrontGameInList(activeList.id);
+        activeList = gamelists[0];
+        game = await getFrontGameInList(activeList.id);
     }
 </script>
 
-{#await fetchGameLists()}
+{#await refresh()}
     Loading...
-{:then gamelists} 
+{:then} 
     <div class="w-full h-full flex-col">
-        {#await fetchFrontGame()}
-            Loading game...
-        {:then game}
-            <!-- Artwork -->
-            <img class="select-none w-full h-2/5 object-cover" src="https://source.unsplash.com/random" alt="Artwork">
+        <!-- Artwork -->
+        <img class="select-none w-full h-2/5 object-cover" src="https://source.unsplash.com/random" alt="Artwork">
 
-            <!-- Control Bar -->
-            <div class="h-8 bg-crust flex flex-row gap-2 items-center border-t border-b border-black">
+        <!-- Control Bar -->
+        <div class="h-8 bg-crust flex flex-row gap-2 items-center border-t border-b border-black">
 
-                <!-- Left Side -->
-                <div class="h-full w-full flex flex-row gap-2 items-center">
+            <!-- Left Side -->
+            <div class="h-full w-full flex flex-row gap-2 items-center">
 
-                    <!-- Game List Selection Dropdown -->
-                    {#if gamelists.length == 0}
-                        <div class="h-full px-4 bg-crust flex justify-center items-center border-r border-r-black">
-                            <p class="text-surface0 font-bold select-none">No Lists</p>
-                        </div>
-                    {:else}
-                        <Dropdown {gamelists} />
-                    {/if}
+                <!-- Game List Selection Dropdown -->
+                <Dropdown {gamelists} />
 
-                    <!-- Game Info -->
-                    {#if game}
-                        <!-- Last Played Display -->
-                        <p class="select-none mx-2">Last Played</p>
-                        <p class="select-none text-mauve font-bold mr-6">{game.state.last_played ?? "Never"}</p>
-
-                        <!-- Playtime Display -->
-                        <Icon width={20} height={20} icon="mingcute:time-fill" />
-                        <p class="select-none">{game.state.gametime_min ?? 0 / 60}</p>
-                    {/if}
-                </div>
-
-                <!-- Right Side -->
-                <div class="h-full w-full flex flex-row-reverse gap-2 items-center">
-                    {#if game}
-                        <!-- Complete Game Button -->
-                        <button class="mr-2 px-2 h-6 bg-mantle rounded-md border border-green text-green font-bold flex flex-row items-center gap-2 hover:bg-green hover:text-black">
-                            COMPLETE
-                            <Icon width={16} icon="fluent-mdl2:completed-solid" />
-                        </button>
-
-                        <!-- Delete Game Button -->
-                        <button class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
-                            <Icon width={20} icon="lets-icons:remove-fill" />
-                        </button>
-
-                        <!-- Move To Backlog Button -->
-                        <button class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
-                            <Icon width={16} icon="fa6-solid:dumpster" />
-                        </button>
-
-                        <!-- Edit Button -->
-                        <button on:click={() => editMenuOpen = true} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-base">
-                            Edit
-                            <Icon width={16} icon="material-symbols:edit" />
-                        </button>
-
-                        <Rating class="mx-2" rating={game.state.user_rating ?? 0} max={5} />
-                    {/if}
-                </div>
-            </div>
-
-            <!-- Game Info -->
-            <div class="h-full p-4 pt-8">
+                <!-- Game Info -->
                 {#if game}
-                    <!-- Game title -->
-                    <h1 class="text-5xl font-bungee text-white mb-4">
-                        {game.data.name}
-                    </h1>
+                    <!-- Last Played Display -->
+                    <p class="select-none mx-2">Last Played</p>
+                    <p class="select-none text-mauve font-bold mr-6">{game.state.last_played ?? "Never"}</p>
 
-                    <!-- Game description -->
-                    <p>
-                        {game.data.description || "No description"}
-                    </p>
+                    <!-- Playtime Display -->
+                    <Icon width={20} height={20} icon="mingcute:time-fill" />
+                    <p class="select-none">{game.state.gametime_min ?? 0 / 60}</p>
                 {/if}
             </div>
 
-            <!-- Edit Menu -->
-            {#if game && editMenuOpen}
-                <EditMenu game={game} on:close={() => editMenuOpen = false} />
+            <!-- Right Side -->
+            <div class="h-full w-full flex flex-row-reverse gap-2 items-center">
+                {#if game}
+                    <!-- Complete Game Button -->
+                    <button class="mr-2 px-2 h-6 bg-mantle rounded-md border border-green text-green font-bold flex flex-row items-center gap-2 hover:bg-green hover:text-black">
+                        COMPLETE
+                        <Icon width={16} icon="fluent-mdl2:completed-solid" />
+                    </button>
+
+                    <!-- Delete Game Button -->
+                    <button class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
+                        <Icon width={20} icon="lets-icons:remove-fill" />
+                    </button>
+
+                    <!-- Move To Backlog Button -->
+                    <button class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
+                        <Icon width={16} icon="fa6-solid:dumpster" />
+                    </button>
+
+                    <!-- Edit Button -->
+                    <button on:click={() => editMenuOpen = true} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-base">
+                        Edit
+                        <Icon width={16} icon="material-symbols:edit" />
+                    </button>
+
+                    <Rating class="mx-2" rating={game.state.user_rating ?? 0} max={5} />
+                {/if}
+            </div>
+        </div>
+
+        <!-- Game Info -->
+        <div class="h-full p-4 pt-8">
+            {#if game}
+                <!-- Game title -->
+                <h1 class="text-5xl font-bungee text-white mb-4">
+                    {game.data.name}
+                </h1>
+
+                <!-- Game description -->
+                <p>
+                    {game.data.description || "No description"}
+                </p>
             {/if}
-        {/await}
+        </div>
+
+        <!-- Edit Menu -->
+        {#if game && editMenuOpen}
+            <EditMenu game={game} on:close={() => editMenuOpen = false} />
+        {/if}
     </div>
 {/await}
