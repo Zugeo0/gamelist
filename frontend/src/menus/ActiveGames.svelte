@@ -1,17 +1,10 @@
 
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import Dropdown from "../components/Dropdown.svelte";
     import Rating from "../components/Rating.svelte";
     import { getGameLists, type GameList, getFrontGameInList, type GameData, type ActiveGame } from "../api";
     import EditMenu from "./EditMenu.svelte";
-
-    interface GameInfo {
-        title: string,
-        custom_rating: number,
-        last_played: Date,
-        playtime_min: number
-    }
+    import Dropdown from "../components/Dropdown.svelte";
 
     let activeList: GameList | null = null;
     let editMenuOpen: boolean = false;
@@ -66,16 +59,15 @@
                 <div class="h-full w-full flex flex-row gap-2 items-center">
 
                     <!-- Game List Selection Dropdown -->
-                    <Dropdown>
-                        {#if gamelists.length == 0}
-                            No Lists
-                        {:else}
-                            {#each gamelists as gamelist}
-                                <option>{gamelist.name}</option>
-                            {/each}
-                        {/if}
-                    </Dropdown>
+                    {#if gamelists.length == 0}
+                        <div class="h-full px-4 bg-crust flex justify-center items-center border-r border-r-black">
+                            <p class="text-surface0 font-bold select-none">No Lists</p>
+                        </div>
+                    {:else}
+                        <Dropdown {gamelists} />
+                    {/if}
 
+                    <!-- Game Info -->
                     {#if game}
                         <!-- Last Played Display -->
                         <p class="select-none mx-2">Last Played</p>
@@ -131,10 +123,10 @@
                     </p>
                 {/if}
             </div>
-            {#if game}
-                {#if editMenuOpen}
-                    <EditMenu game={game} on:close={() => editMenuOpen = false} />
-                {/if}
+
+            <!-- Edit Menu -->
+            {#if game && editMenuOpen}
+                <EditMenu game={game} on:close={() => editMenuOpen = false} />
             {/if}
         {/await}
     </div>
