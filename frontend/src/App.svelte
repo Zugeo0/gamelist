@@ -6,6 +6,7 @@
 
     // Pages
     import ActiveGames from "./menus/ActiveGames.svelte";
+    import GameLists from "./menus/GameLists.svelte";
 </script>
 
 <Router>
@@ -44,8 +45,7 @@
                 route="/completions"
             />
         </Navbar>
-        <div class="w-full h-full">
-            <Route path="/" component={ActiveGames} />
-        </div>
+        <Route path="/" component={ActiveGames} />
+        <Route path="/games" component={GameLists} />
     </main>
 </Router>

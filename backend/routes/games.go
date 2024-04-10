@@ -41,7 +41,7 @@ func createGame(ctx *fiber.Ctx) error {
 		payload.Genres = []string{}
 	}
 
-	_, err := app.CreateGame(
+	game, err := app.CreateGame(
 		payload.Name,
 		payload.Description,
 		payload.Genres,
@@ -53,7 +53,7 @@ func createGame(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.SendStatus(201)
+	return ctx.Status(201).JSON(game)
 }
 
 func updateGame(ctx *fiber.Ctx) error {

@@ -18,6 +18,7 @@ export interface GameData {
     igdb_id: string | null,
     metacritic_score: string | null,
     steam_id: string | null,
+    state: GameState | null,
 }
 
 export interface GameState {
@@ -29,9 +30,50 @@ export interface GameState {
     last_played: Date | null,
 }
 
-export interface ActiveGame {
-    data: GameData,
-    state: GameState,
+
+export async function moveGameToList(gameid: number, listid: number) {
+    await axios(apiPath + `/api/games/${gameid}/move/${listid}`, {
+        method: "PUT",
+    });
+}
+
+export async function moveGameToBacklog(gameid: number) {
+    await axios(apiPath + `/api/games/${gameid}/move/backlog`, {
+        method: "PUT",
+    });
+}
+
+export async function createGame(
+    name: string,
+    description: string,
+    genres: string[],
+    artwork_url: string | null,
+    release_date: Date | null,
+    igdb_id: string | null,
+    steam_id: string | null,
+
+): Promise<GameData> {
+    let response = await axios(apiPath + "/api/games", {
+        method: "POST",
+        data: {
+            name,
+            description,
+            genres,
+            artwork_url,
+            release_date,
+            igdb_id,
+            steam_id,
+        },
+    });
+
+    return mapToActiveGame(response.data);
+}
+
+export async function getGamesInList(listid: number): Promise<GameData[]> {
+    let response = await axios(apiPath + `/api/gamelists/${listid}/games`);
+    let games: any[] = response.data;
+
+    return games.map(mapToActiveGame);
 }
 
 export async function createGameList(name: string): Promise<GameList> {
@@ -78,7 +120,7 @@ export async function getGameList(id: number): Promise<GameList> {
     };
 }
 
-export async function getFrontGameInList(listid: number): Promise<ActiveGame | null> {
+export async function getFrontGameInList(listid: number): Promise<GameData | null> {
     let response = await axios(apiPath + "/api/gamelists/" + listid + "/front");
     let game = response.data;
 
@@ -86,18 +128,20 @@ export async function getFrontGameInList(listid: number): Promise<ActiveGame | n
         return null;
     }
 
+    return mapToActiveGame(game);
+}
+
+function mapToActiveGame(game: any): GameData {
     return {
-        data: {
-            id: game.ID,
-            name: game.Name,
-            description: game.Description,
-            genres: game.Genres,
-            artwork_url: game.ArtworkUrl,
-            release_date: game.ReleaseDate,
-            igdb_id: game.IgdbId,
-            metacritic_score: game.MetacriticScore,
-            steam_id: game.SteamId,
-        },
+        id: game.ID,
+        name: game.Name,
+        description: game.Description,
+        genres: game.Genres,
+        artwork_url: game.ArtworkUrl,
+        release_date: game.ReleaseDate,
+        igdb_id: game.IgdbId,
+        metacritic_score: game.MetacriticScore,
+        steam_id: game.SteamId,
         state: {
             game_list: game.GameList,
             user_rating: game.UserRating,

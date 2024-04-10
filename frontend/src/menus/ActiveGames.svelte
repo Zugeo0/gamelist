@@ -2,15 +2,15 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
     import Rating from "../components/Rating.svelte";
-    import { getGameLists, type GameList, getFrontGameInList, type GameData, type ActiveGame } from "../api";
-    import EditMenu from "./EditMenu.svelte";
+    import { getGameLists, type GameList, getFrontGameInList, type GameData } from "../api";
+    import EditGame from "../components/EditGame.svelte";
     import Dropdown from "../components/Dropdown.svelte";
 
     let activeList: GameList | null = null;
     let editMenuOpen: boolean = false;
 
     let gamelists: GameList[];
-    let game: ActiveGame | null;
+    let game: GameData | null;
 
     async function refresh() {
         gamelists = await getGameLists();
@@ -44,11 +44,11 @@
                 {#if game}
                     <!-- Last Played Display -->
                     <p class="select-none mx-2">Last Played</p>
-                    <p class="select-none text-mauve font-bold mr-6">{game.state.last_played ?? "Never"}</p>
+                    <p class="select-none text-mauve font-bold mr-6">{game?.state?.last_played ?? "Never"}</p>
 
                     <!-- Playtime Display -->
                     <Icon width={20} height={20} icon="mingcute:time-fill" />
-                    <p class="select-none">{game.state.gametime_min ?? 0 / 60}</p>
+                    <p class="select-none">{game?.state?.gametime_min ?? 0 / 60}</p>
                 {/if}
             </div>
 
@@ -77,7 +77,7 @@
                         <Icon width={16} icon="material-symbols:edit" />
                     </button>
 
-                    <Rating class="mx-2" rating={game.state.user_rating ?? 0} max={5} />
+                    <Rating class="mx-2" rating={game?.state?.user_rating ?? 0} max={5} />
                 {/if}
             </div>
         </div>
@@ -86,20 +86,20 @@
         <div class="h-full p-4 pt-8">
             {#if game}
                 <!-- Game title -->
-                <h1 class="text-5xl font-bungee text-white mb-4">
-                    {game.data.name}
+                <h1 class="text-5xl font-lalezar text-white mb-4">
+                    {game.name}
                 </h1>
 
                 <!-- Game description -->
                 <p>
-                    {game.data.description || "No description"}
+                    {game.description || "No description"}
                 </p>
             {/if}
         </div>
 
         <!-- Edit Menu -->
         {#if game && editMenuOpen}
-            <EditMenu game={game} on:close={() => editMenuOpen = false} />
+            <EditGame game={game} on:close={() => editMenuOpen = false} />
         {/if}
     </div>
 {/await}

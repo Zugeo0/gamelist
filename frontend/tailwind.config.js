@@ -8,7 +8,7 @@ export default {
     extend: {
       fontFamily: {
         exo: ['Exo Variable', 'sans-serif'],
-        bungee: ['Bungee', 'system-ui']
+        lalezar: ['Lalezar', 'system-ui']
       }
     },
   },

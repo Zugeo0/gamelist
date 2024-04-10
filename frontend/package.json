@@ -28,6 +28,7 @@
   "dependencies": {
     "@fontsource-variable/exo": "^5.0.18",
     "@fontsource/bungee": "^5.0.19",
+    "@fontsource/lalezar": "^5.0.12",
     "axios": "^1.6.8",
     "tailwind-merge": "^2.2.2"
   }

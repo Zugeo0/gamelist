@@ -3,8 +3,10 @@
     import Icon from "@iconify/svelte";
     import { createGameList, getGameLists, type GameList, deleteGameList } from "../api";
     import { createEventDispatcher } from "svelte";
+    import { twJoin, twMerge } from "tailwind-merge";
 
     export let gamelists: GameList[];
+    export let bg: string = "";
 
     const dispatch = createEventDispatcher<{select: number, listUpdated: undefined}>();
 
@@ -40,7 +42,7 @@
 </script>
 
 <div class="relative h-full min-w-32 w-fit">
-    <button on:click={() => selectionOpen = !selectionOpen} class="h-full w-full px-4 bg-crust font-bold border-r border-r-black flex flex-row items-center justify-between select-none">
+    <button on:click={() => selectionOpen = !selectionOpen} class={twMerge("h-full w-full px-4 bg-crust font-bold border-r border-r-black flex flex-row items-center justify-between select-none", bg)}>
         {#if gamelists.length > 0}
             <p class="overflow-hidden">{gamelists[selection].name}</p>
         {:else}
@@ -49,7 +51,7 @@
         <Icon icon="mingcute:down-fill" />
     </button>
     {#if selectionOpen}
-        <div class="absolute top-full left-0 flex flex-col bg-crust min-w-full w-fit text-nowrap text-left border border-black">
+        <div class={twMerge("absolute top-full left-0 flex flex-col bg-crust min-w-full w-fit text-nowrap text-left border border-black", bg)}>
             {#each gamelists as gamelist, i}
                 <div class="group hover:bg-mantle select-none w-full flex flex-row">
                     <button on:click={() => select(i)} class="hover:bg-mantle select-none w-full text-left py-1 px-4">
