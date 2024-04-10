@@ -14,8 +14,6 @@
 
     async function refresh() {
         gamelists = await getGameLists();
-        console.log(gamelists);
-        //gamelists = [ { id: 0, name: "Main" }, { id: 1, name: "Side" }, { id: 2, name: "Co-op" }, { id: 3, name: "This is a really long name" } ];
 
         if (gamelists.length == 0) {
             return;
