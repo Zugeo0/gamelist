@@ -4,11 +4,10 @@
     import { type GameData } from "../api";
 
     export let game: GameData;
-
-    let selected = false;
+    export let selected: boolean;
 </script>
 
-<button on:click={() => selected = !selected} class={twMerge(
+<button on:click class={twMerge(
     "h-24 w-full flex flex-row hover:bg-base transition-all duration-75 border-b border-b-black",
     selected && "border-l-8 border-l-green bg-base"
 )}>
@@ -17,13 +16,21 @@
             {game.name}
         </h1>
         <div class="flex flex-row gap-4 items-center">
-            <p>RPG</p>
-            <p>2019</p>
-            <div class="flex flex-row items-center gap-2">
-                <Icon icon="simple-icons:metacritic" />
-                <p>85</p>
-            </div>
+            {#if game.genres.length > 0}
+                <p>{game.genres[0]}</p>
+            {/if}
+            {#if game.release_date}
+                <p>{game.release_date.getFullYear()}</p>
+            {/if}
+            {#if game.metacritic_score}
+                <div class="flex flex-row items-center gap-2">
+                    <Icon icon="simple-icons:metacritic" />
+                    <p>85</p>
+                </div>
+            {/if}
         </div>
     </div>
-    <img class="select-none min-w-32 h-full object-cover" src="https://source.unsplash.com/random" alt="Artwork">
+    {#if game.artwork_url}
+        <img class="select-none min-w-32 h-full object-cover" src={game.artwork_url} alt="Artwork">
+    {/if}
 </button>

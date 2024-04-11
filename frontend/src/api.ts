@@ -43,6 +43,32 @@ export async function moveGameToBacklog(gameid: number) {
     });
 }
 
+export async function updateGame(
+    id: number,
+    name: string,
+    description: string,
+    genres: string[],
+    artwork_url: string | null,
+    release_date: Date | null,
+    igdb_id: string | null,
+    steam_id: string | null,
+): Promise<GameData> {
+    let response = await axios(apiPath + `/api/games/${id}`, {
+        method: "PUT",
+        data: {
+            Name: name,
+            Description: description,
+            Genres: genres,
+            ArtworkUrl: artwork_url,
+            ReleaseDate: release_date,
+            IgdbId: igdb_id,
+            SteamId: steam_id,
+        },
+    });
+
+    return mapToGameData(response.data);
+}
+
 export async function createGame(
     name: string,
     description: string,
@@ -56,24 +82,24 @@ export async function createGame(
     let response = await axios(apiPath + "/api/games", {
         method: "POST",
         data: {
-            name,
-            description,
-            genres,
-            artwork_url,
-            release_date,
-            igdb_id,
-            steam_id,
+            Name: name,
+            Description: description,
+            Genres: genres,
+            ArtworkUrl: artwork_url,
+            ReleaseDate: release_date,
+            IgdbId: igdb_id,
+            SteamId: steam_id,
         },
     });
 
-    return mapToActiveGame(response.data);
+    return mapToGameData(response.data);
 }
 
 export async function getGamesInList(listid: number): Promise<GameData[]> {
     let response = await axios(apiPath + `/api/gamelists/${listid}/games`);
     let games: any[] = response.data;
 
-    return games.map(mapToActiveGame);
+    return games.map(mapToGameData);
 }
 
 export async function createGameList(name: string): Promise<GameList> {
@@ -128,10 +154,10 @@ export async function getFrontGameInList(listid: number): Promise<GameData | nul
         return null;
     }
 
-    return mapToActiveGame(game);
+    return mapToGameData(game);
 }
 
-function mapToActiveGame(game: any): GameData {
+function mapToGameData(game: any): GameData {
     return {
         id: game.ID,
         name: game.Name,

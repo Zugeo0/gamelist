@@ -81,7 +81,7 @@ func updateGame(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	_, err = app.UpdateGame(
+	game, err := app.UpdateGame(
 		int32(id),
 		payload.Name,
 		payload.Description,
@@ -94,7 +94,7 @@ func updateGame(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.SendStatus(201)
+	return ctx.Status(201).JSON(game)
 }
 
 func getGames(ctx *fiber.Ctx) error {

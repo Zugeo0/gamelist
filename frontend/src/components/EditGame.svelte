@@ -23,13 +23,20 @@
     function accept() {
         dispatcher("accept", game);
     }
+
+    function editArtwork() {
+        let url = prompt("Enter Artwork URL");
+        game.artwork_url = url ?? null;
+    }
 </script>
 
 <div class="absolute inset-0 bg-[#00000088] flex flex-row justify-center items-center">
     <div class="relative w-[700px] h-[600px] bg-base border border-overlay0 rounded-2xl shadow-lg flex flex-col overflow-hidden">
 
         <!-- Header image -->
-        <img class="min-h-44 h-44 object-cover border-b border-b-black" src="https://source.unsplash.com/random" alt="Game Artwork">
+        {#if game.artwork_url}
+            <img class="min-h-44 h-44 object-cover border-b border-b-black" src={game.artwork_url} alt="Game Artwork">
+        {/if}
 
         <!-- Game Name -->
         <input bind:value={game.name} type="text" placeholder="No Name" class="bg-base outline-none max-h-28 py-2 font-lalezar text-center text-4xl text-white">
@@ -50,13 +57,18 @@
 
         <div class="absolute m-2 right-0 top-0 flex flex-row-reverse gap-2">
             <!-- Accept button -->
-            <button on:click={accept} class="bg-green rounded-md p-2 shadow-xl text-white">
+            <button on:click={accept} class="bg-surface0 rounded-md p-2 shadow-xl hover:text-white hover:bg-surface1">
                 <Icon width={32} icon="mingcute:check-fill" />
             </button>
 
             <!-- Close button -->
-            <button on:click={close} class="bg-surface0 rounded-md p-2 shadow-xl">
+            <button on:click={close} class="bg-surface0 rounded-md p-2 shadow-xl hover:text-white hover:bg-surface1">
                 <Icon width={32} icon="mingcute:close-fill" />
+            </button>
+
+            <!-- Edit artwork button -->
+            <button on:click={editArtwork} class="bg-surface0 rounded-md p-2 shadow-xl hover:text-white hover:bg-surface1">
+                <Icon width={32} icon="material-symbols:edit" />
             </button>
         </div>
 

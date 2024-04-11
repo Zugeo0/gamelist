@@ -2,15 +2,16 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
     import Rating from "../components/Rating.svelte";
-    import { getGameLists, type GameList, getFrontGameInList, type GameData } from "../api";
+    import { getGameLists, type GameList, getFrontGameInList, type GameData, updateGame } from "../api";
     import EditGame from "../components/EditGame.svelte";
     import Dropdown from "../components/Dropdown.svelte";
 
     let activeList: GameList | null = null;
-    let editMenuOpen: boolean = false;
 
     let gamelists: GameList[];
     let game: GameData | null;
+
+    let editGame: GameData | null;
 
     async function refresh() {
         gamelists = await getGameLists();
@@ -22,6 +23,30 @@
         activeList = gamelists[0];
         game = await getFrontGameInList(activeList.id);
     }
+
+    function editActiveGame() {
+        editGame = game;
+    }
+
+    async function acceptEditGame(event: CustomEvent<GameData>) {
+        editGame = null;
+        let gameData = event.detail;
+
+        try {
+            game = await updateGame(
+                gameData.id,
+                gameData.name,
+                gameData.description,
+                gameData.genres,
+                gameData.artwork_url,
+                gameData.release_date,
+                gameData.igdb_id,
+                gameData.steam_id,
+            );
+        } catch (e) {
+            console.log(e);
+        }
+    }
 </script>
 
 {#await refresh()}
@@ -29,7 +54,7 @@
 {:then} 
     <div class="w-full h-full flex-col">
         <!-- Artwork -->
-        <img class="select-none w-full h-2/5 object-cover" src="https://source.unsplash.com/random" alt="Artwork">
+        <img class="select-none w-full h-2/5 object-cover" src={game?.artwork_url ?? "https://source.unsplash.com/random"} alt="Artwork">
 
         <!-- Control Bar -->
         <div class="h-8 bg-crust flex flex-row gap-2 items-center border-t border-b border-black">
@@ -72,7 +97,7 @@
                     </button>
 
                     <!-- Edit Button -->
-                    <button on:click={() => editMenuOpen = true} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-base">
+                    <button on:click={editActiveGame} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-base">
                         Edit
                         <Icon width={16} icon="material-symbols:edit" />
                     </button>
@@ -98,8 +123,8 @@
         </div>
 
         <!-- Edit Menu -->
-        {#if game && editMenuOpen}
-            <EditGame game={game} on:close={() => editMenuOpen = false} />
+        {#if editGame}
+            <EditGame on:close={() => editGame = null} on:accept={acceptEditGame} game={editGame} />
         {/if}
     </div>
 {/await}

@@ -1,7 +1,7 @@
 
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import { getGameLists, type GameData, type GameList, getFrontGameInList, getGamesInList, createGame, moveGameToList } from "../api";
+    import { getGameLists, type GameData, type GameList, getFrontGameInList, getGamesInList, createGame, moveGameToList, updateGame } from "../api";
     import Dropdown from "../components/Dropdown.svelte";
     import GameInfo from "../components/GameInfo.svelte";
     import EditGame from "../components/EditGame.svelte";
@@ -44,23 +44,22 @@
 
     async function acceptCreateGame(event: CustomEvent<GameData>) {
         newGame = null;
-        let game = event.detail;
+        let gameData = event.detail;
 
         if (activeList == null) {
-            console.error("Active list is null")
+            console.error("Active list is null");
             return;
         }
 
         try {
-            console.log("Creating game: ", event.detail)
             let newGame = await createGame(
-                game.name,
-                game.description,
-                game.genres,
-                game.artwork_url,
-                game.release_date,
-                game.igdb_id,
-                game.steam_id,
+                gameData.name,
+                gameData.description,
+                gameData.genres,
+                gameData.artwork_url,
+                gameData.release_date,
+                gameData.igdb_id,
+                gameData.steam_id,
             );
             await moveGameToList(newGame.id, activeList.id);
 
@@ -74,9 +73,28 @@
         editGame = activeGame;
     }
 
-    function acceptEditGame(event: CustomEvent<GameData>) {
+    async function acceptEditGame(event: CustomEvent<GameData>) {
         editGame = null;
-        console.log("Editing game: ", event.detail)
+        let gameData = event.detail;
+
+        try {
+            let gameInList = games.find(game => game.id == gameData.id)!;
+            let gameIndex = games.indexOf(gameInList);
+
+            games[gameIndex] = await updateGame(
+                gameData.id,
+                gameData.name,
+                gameData.description,
+                gameData.genres,
+                gameData.artwork_url,
+                gameData.release_date,
+                gameData.igdb_id,
+                gameData.steam_id,
+            );
+            activeGame = games[gameIndex];
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     async function changeGameList(event: CustomEvent<number>) {
@@ -117,7 +135,7 @@
 
                 {/if}
 
-                <GameInfo {game} />
+                <GameInfo on:click={() => activeGame = game} selected={game == activeGame} {game} />
 
             {/each}
 
@@ -134,7 +152,9 @@
             {#if activeGame}
 
                 <!-- Artwork -->
-                <img class="select-none h-2/5 object-cover border-b border-b-overlay0" src="https://source.unsplash.com/random" alt="Artwork">
+                {#if activeGame.artwork_url}
+                    <img class="select-none h-2/5 object-cover border-b border-b-overlay0" src={activeGame.artwork_url} alt="Artwork">
+                {/if}
 
                 <!-- Control Bar -->
                 <div class="h-8 bg-crust flex flex-row gap-2 items-center border-b border-black">
@@ -178,6 +198,16 @@
                         </button>
 
                     </div>
+                </div>
+
+                <div class="w-full px-4 py-8 flex-grow">
+                    <h1 class="text-5xl font-lalezar text-white mb-4">
+                        {activeGame.name}
+                    </h1>
+
+                    <p>
+                        {activeGame.description || "No description"}
+                    </p>
                 </div>
             {/if}
         </div>
