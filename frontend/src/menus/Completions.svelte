@@ -62,7 +62,7 @@
 
                     <!-- Move To List Button -->
                     <button on:click={() => moveToList(game.id)} class="w-12 my-4 rounded-lg bg-base border border-surface0 opacity-0 group-hover:opacity-100 hover:bg-peach hover:border-peach hover:text-white flex justify-center items-center">
-                        <Icon width={24} icon="material-symbols:move-up" />
+                        <Icon width={20} icon="streamline:return-2-solid" />
                     </button>
                 </GameInfo>
             {/if}
