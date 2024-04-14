@@ -51,7 +51,7 @@
 {#if games.length > 0}
     <div class="flex flex-col w-full">
         {#each games as game}
-            <GameInfo class="group h-20 hover:bg-base transition-none" selected={false} {game}>
+            <GameInfo class="group h-20 hover:bg-base transition-none cursor-default" selected={false} {game}>
 
                 <!-- Status Button -->
                 <button on:click={() => updateCustomStatus(game.id)} class="w-64 my-4 rounded-lg border border-base font-lalezar text-2xl group-hover:border-surface0 hover:bg-surface0 hover:border-surface1">

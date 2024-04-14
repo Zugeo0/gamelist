@@ -177,6 +177,10 @@ export async function getUncompletedGamesInList(listid: number): Promise<GameDat
     return games.filter(game => game.state?.game_list === listid && !game.state.completed);
 }
 
+export async function getCompletedGames(): Promise<GameData[]> {
+    return games.filter(game => game.state?.completed);
+}
+
 export async function createGameList(name: string): Promise<GameList> {
     const gamelist = {
         id: nextGamelistId++,
