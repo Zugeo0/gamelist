@@ -4,6 +4,7 @@
     import { getCompletedGames, setGameCompleted, type GameData } from "../api";
     import GameInfo from "../components/GameInfo.svelte";
     import { onMount } from "svelte";
+    import Rating from "../components/Rating.svelte";
 
     let games: GameData[] = [];
 
@@ -41,13 +42,22 @@
         {#each games as game}
             {#if game.state}
                 <GameInfo class="group h-20 hover:bg-base transition-none cursor-default" selected={false} {game}>
+
+                    <!-- Game Time -->
                     <div class="w-24 flex flex-col justify-center items-center gap-1 mx-4 text-peach">
                         <Icon width={24} icon="mingcute:time-fill" />
                         <p class="select-none">{game.state.gametime_min < 60 ? `${Math.round(game.state.gametime_min)} minutes` : `${Math.round(game.state.gametime_min / 6) / 10} hours`}</p>
                     </div>
+
+                    <!-- Last Played -->
                     <div class="w-24 flex flex-col justify-center items-center gap-1 mx-4 text-mauve">
                         <Icon width={24} icon="bxs:calendar" />
                         <p>{game.state.last_played ? formatDate(game.state.last_played) : "Never"}</p>
+                    </div>
+
+                    <!-- Rating -->
+                    <div class="w-24 flex flex-col justify-center items-center gap-1 mx-4 text-mauve">
+                        <Rating ratingFullClass="text-yellow" interactable={false} max={5} rating={game.state.user_rating} />
                     </div>
 
                     <!-- Move To List Button -->
