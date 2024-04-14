@@ -109,6 +109,7 @@ export async function setGameCompleted(gameid: number, completed: boolean) {
         return;
     }
 
+    game.state.last_played = new Date();
     game.state.completed = completed;
 }
 
@@ -134,6 +135,17 @@ export async function moveGameToBacklog(gameid: number) {
 
 export async function deleteGame(id: number) {
     games = games.filter(game => game.id !== id);
+}
+
+export async function updateGameOrder(id: number, newOrder: number): Promise<GameData | null> {
+    const game = games.find(game => game.id === id);
+
+    if (!game || !game.state) {
+        return null;
+    }
+
+    game.state.list_order = newOrder;
+    return game;
 }
 
 export async function updateGame(
@@ -166,19 +178,21 @@ export async function createGame(
 }
 
 export async function getGamesInList(listid: number): Promise<GameData[]> {
-    return games.filter(game => game.state?.game_list == listid);
+    return games.filter(game => game.state?.game_list == listid).toSorted((a, b) => a.state!.list_order - b.state!.list_order);
 }
 
 export async function getGamesInBacklog(): Promise<GameData[]> {
-    return games.filter(game => game.state?.game_list === null && !game.state?.completed);
+    return games.filter(game => game.state?.game_list === null && !game.state?.completed).toSorted((a, b) => a.state!.list_order - b.state!.list_order);
 }
 
 export async function getUncompletedGamesInList(listid: number): Promise<GameData[]> {
-    return games.filter(game => game.state?.game_list === listid && !game.state.completed);
+    return games.filter(game => game.state?.game_list === listid && !game.state.completed).toSorted((a, b) => a.state!.list_order - b.state!.list_order);
 }
 
 export async function getCompletedGames(): Promise<GameData[]> {
-    return games.filter(game => game.state?.completed);
+    return games.filter(game => game.state?.completed)
+        .toSorted((a, b) => a.state!.last_played!.valueOf() - b.state!.last_played!.valueOf())
+        .toReversed();
 }
 
 export async function createGameList(name: string): Promise<GameList> {
@@ -192,6 +206,9 @@ export async function createGameList(name: string): Promise<GameList> {
 
 export async function deleteGameList(id: number) {
     gamelists = gamelists.filter(list => list.id !== id);
+    games.filter(game => game.state && game.state.game_list == id).forEach(game => {
+        game.state!.game_list = null;
+    });
 }
 
 export async function getGameLists(): Promise<GameList[]> {
@@ -204,7 +221,7 @@ export async function getGameList(id: number): Promise<GameList | null> {
 }
 
 export async function getFrontGameInList(listid: number): Promise<GameData | null> {
-    const gamesInList = games.filter(list => list.state?.game_list == listid && !list.state?.completed);
+    const gamesInList = games.filter(list => list.state?.game_list == listid && !list.state?.completed).toSorted((a, b) => a.state!.list_order - b.state!.list_order);
     return gamesInList.length > 0 ? gamesInList[0] : null;
 }
 

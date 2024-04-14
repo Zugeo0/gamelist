@@ -27,9 +27,11 @@
         }
 
         let newList = await createGameList(name);
+        let index = gamelists.length;
         gamelists = [...gamelists, newList];
 
         dispatch("listUpdated");
+        select(index);
     }
 
     async function deleteList(id: number) {

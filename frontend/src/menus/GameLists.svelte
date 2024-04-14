@@ -1,10 +1,11 @@
 
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import { getGameLists, deleteGame, type GameData, type GameList, getUncompletedGamesInList, createGame, moveGameToList, updateGame, moveGameToBacklog, setGameCompleted } from "../api";
     import Dropdown from "../components/Dropdown.svelte";
     import GameInfo from "../components/GameInfo.svelte";
     import EditGame from "../components/EditGame.svelte";
+    import { getGameLists, deleteGame, type GameData, type GameList, getUncompletedGamesInList, createGame, moveGameToList, updateGame, moveGameToBacklog, setGameCompleted, updateGameOrder } from "../api";
+    import { dndzone, type DndEvent } from "svelte-dnd-action";
     import { onMount } from "svelte";
 
     let activeList: GameList | null = null;
@@ -17,16 +18,19 @@
     let editGame: GameData | null = null;
 
     onMount(async () => {
+        await updateGameLists();
+        activeList = gamelists[0];
+        games = await getUncompletedGamesInList(activeList.id);
+    });
+
+    async function updateGameLists() {
         gamelists = await getGameLists();
 
         if (gamelists.length == 0) {
             games = [];
             return;
         }
-
-        activeList = gamelists[0];
-        games = await getUncompletedGamesInList(activeList.id);
-    });
+    }
 
     function createNewGame() {
         newGame = {
@@ -79,6 +83,7 @@
     }
 
     async function changeGameList(event: CustomEvent<number>) {
+        await updateGameLists();
         activeList = gamelists.filter(list => list.id == event.detail)[0];
         games = await getUncompletedGamesInList(activeList.id);
     }
@@ -117,6 +122,21 @@
         activeGame = games[0] ?? null;
     }
 
+    function handleConsider(e: CustomEvent<DndEvent<GameData>>) {
+        games = e.detail.items;
+    }
+
+    async function handleFinalize(e: CustomEvent<DndEvent<GameData>>) {
+        games = e.detail.items;
+        let order = 0;
+        for (let game of games) {
+            if (!game.state) {
+                continue;
+            }
+            game = await updateGameOrder(game.id, order++) as GameData;
+        }
+    }
+
     function formatDate(date: Date): string {
         let month = '';
         switch (date.getMonth()) {
@@ -146,29 +166,23 @@
                 <Dropdown on:select={changeGameList} bg="bg-mantle" {gamelists} />
             </div>
 
-            {#each games as game, i}
+            <!-- Current Game Label -->
+            {#if games.length > 0}
+                <div class="w-full h-6 bg-green text-black text-center font-bold flex flex-row justify-around border-y border-black select-none">
+                    <p>v v v</p> <p>PLAYING</p> <p>v v v</p>
+                </div>
+            {/if}
 
-                {#if i == 0}
+            <section use:dndzone={{items: games}} on:consider={handleConsider} on:finalize={handleFinalize}>
+                {#each games as game (game.id)}
 
-                    <!-- Current Game Label -->
-                    <div class="w-full h-6 bg-green text-black text-center font-bold flex flex-row justify-around border-y border-black select-none">
-                        <p>v v v</p> <p>PLAYING</p> <p>v v v</p>
-                    </div>
+                    <GameInfo
+                        on:click={() => activeGame === game ? activeGame = null : activeGame = game}
+                        selected={game === activeGame} {game}
+                    />
 
-                {/if}
-
-                {#if i == 1}
-
-                    <!-- Up Next Label -->
-                    <div class="w-full h-6 bg-peach text-black text-center font-bold flex flex-row justify-around border-y border-black select-none">
-                        <p>v v v</p> <p>UP NEXT</p> <p>v v v</p>
-                    </div>
-
-                {/if}
-
-                <GameInfo on:click={() => activeGame === game ? activeGame = null : activeGame = game} selected={game === activeGame} {game} />
-
-            {/each}
+                {/each}
+            </section>
 
             {#if activeList}
                 <div class="w-full h-14 flex justify-center items-center">

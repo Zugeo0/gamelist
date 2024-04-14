@@ -13,6 +13,8 @@
 
     onMount(async () => {
         await updateGameLists();
+        activeList = gamelists[0];
+        game = await getFrontGameInList(activeList.id);
     });
 
     async function updateGameLists() {
@@ -22,12 +24,10 @@
             activeList = null;
             return;
         }
-
-        activeList = gamelists[0];
-        game = await getFrontGameInList(activeList.id);
     }
 
     async function setGameList(event: CustomEvent<number>) {
+        await updateGameLists();
         const listId = event.detail;
         activeList = gamelists.find(list => list.id == listId) ?? null;
 
