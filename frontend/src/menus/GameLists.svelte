@@ -5,6 +5,7 @@
     import Dropdown from "../components/Dropdown.svelte";
     import GameInfo from "../components/GameInfo.svelte";
     import EditGame from "../components/EditGame.svelte";
+    import { onMount } from "svelte";
 
     let activeList: GameList | null = null;
 
@@ -15,7 +16,7 @@
     let newGame: GameData | null = null;
     let editGame: GameData | null = null;
 
-    async function refresh() {
+    onMount(async () => {
         gamelists = await getGameLists();
 
         if (gamelists.length == 0) {
@@ -25,7 +26,7 @@
 
         activeList = gamelists[0];
         games = await getUncompletedGamesInList(activeList.id);
-    }
+    });
 
     function createNewGame() {
         newGame = {
@@ -59,10 +60,6 @@
         } catch (e) {
             console.log(e);
         }
-    }
-
-    function editActiveGame() {
-        editGame = activeGame;
     }
 
     async function acceptEditGame(event: CustomEvent<GameData>) {
@@ -140,9 +137,7 @@
     }
 </script>
 
-{#await refresh()}
-    Loading...
-{:then}
+{#if gamelists && games}
     <div class="w-full h-full flex flex-row">
         <div class="h-full min-w-96 bg-mantle border-r border-r-overlay0 flex flex-col">
 
@@ -171,7 +166,7 @@
 
                 {/if}
 
-                <GameInfo on:click={() => activeGame = game} selected={game === activeGame} {game} />
+                <GameInfo on:click={() => activeGame === game ? activeGame = null : activeGame = game} selected={game === activeGame} {game} />
 
             {/each}
 
@@ -184,6 +179,7 @@
             {/if}
 
         </div>
+
         <div class="h-full flex-grow bg-crust flex flex-col justify-between">
             {#if activeGame}
 
@@ -229,7 +225,7 @@
                         </button>
 
                         <!-- Edit Button -->
-                        <button on:click={editActiveGame} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-blue hover:border-blue hover:text-black">
+                        <button on:click={() => editGame = activeGame} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-blue hover:border-blue hover:text-black">
                             Edit
                             <Icon width={16} icon="material-symbols:edit" />
                         </button>
@@ -257,4 +253,4 @@
             <EditGame on:close={() => editGame = null} on:accept={acceptEditGame} game={editGame} />
         {/if}
     </div>
-{/await}
+{/if}

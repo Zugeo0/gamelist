@@ -4,13 +4,14 @@
     import Rating from "../components/Rating.svelte";
     import { getGameLists, setGameCompleted, type GameList, getFrontGameInList, type GameData, moveGameToBacklog, updateGameRating } from "../api";
     import Dropdown from "../components/Dropdown.svelte";
+    import { onMount } from "svelte";
 
     let activeList: GameList | null = null;
 
     let gamelists: GameList[];
     let game: GameData | null;
 
-    async function refresh() {
+    onMount(async () => {
         gamelists = await getGameLists();
 
         if (gamelists.length == 0) {
@@ -19,7 +20,7 @@
 
         activeList = gamelists[0];
         game = await getFrontGameInList(activeList.id);
-    }
+    });
 
     async function completeActiveGame() {
         setGameCompleted(game!.id, true);
@@ -55,9 +56,7 @@
     }
 </script>
 
-{#await refresh()}
-    Loading...
-{:then} 
+{#if activeList}
     <div class="w-full h-full flex-col">
         <!-- Artwork -->
         <img class="select-none w-full h-2/5 object-cover" src={game?.artwork_url ?? "https://source.unsplash.com/random"} alt="Artwork">
@@ -121,4 +120,4 @@
             {/if}
         </div>
     </div>
-{/await}
+{/if}
