@@ -48,29 +48,36 @@
     }
 </script>
 
-<div class="flex flex-col w-full">
-    {#each games as game}
-        <GameInfo class="group h-20 hover:bg-base transition-none" selected={false} {game}>
+{#if games.length > 0}
+    <div class="flex flex-col w-full">
+        {#each games as game}
+            <GameInfo class="group h-20 hover:bg-base transition-none" selected={false} {game}>
 
-            <!-- Status Button -->
-            <button on:click={() => updateCustomStatus(game.id)} class="w-64 my-4 rounded-lg border border-base font-lalezar text-2xl group-hover:border-surface0 hover:bg-surface0 hover:border-surface1">
-                {game.state?.custom_status}
-            </button>
+                <!-- Status Button -->
+                <button on:click={() => updateCustomStatus(game.id)} class="w-64 my-4 rounded-lg border border-base font-lalezar text-2xl group-hover:border-surface0 hover:bg-surface0 hover:border-surface1">
+                    {game.state?.custom_status}
+                </button>
 
-            <!-- Move To List Button -->
-            <button on:click={() => moveToList(game.id)} class="w-12 my-4 rounded-lg bg-base border border-surface0 opacity-0 group-hover:opacity-100 hover:bg-peach hover:border-peach hover:text-white flex justify-center items-center">
-                <Icon width={24} icon="material-symbols:move-up" />
-            </button>
+                <!-- Move To List Button -->
+                <button on:click={() => moveToList(game.id)} class="w-12 my-4 rounded-lg bg-base border border-surface0 opacity-0 group-hover:opacity-100 hover:bg-peach hover:border-peach hover:text-white flex justify-center items-center">
+                    <Icon width={24} icon="material-symbols:move-up" />
+                </button>
 
-            <!-- Edit Button -->
-            <button on:click={() => gameToUpdate = game} class="w-12 my-4 rounded-lg bg-base border border-surface0 opacity-0 group-hover:opacity-100 hover:bg-surface0 hover:border-surface1 flex justify-center items-center">
-                <Icon width={24} icon="material-symbols:edit" />
-            </button>
-        </GameInfo>
-    {/each}
-</div>
+                <!-- Edit Button -->
+                <button on:click={() => gameToUpdate = game} class="w-12 my-4 rounded-lg bg-base border border-surface0 opacity-0 group-hover:opacity-100 hover:bg-surface0 hover:border-surface1 flex justify-center items-center">
+                    <Icon width={24} icon="material-symbols:edit" />
+                </button>
+            </GameInfo>
+        {/each}
+    </div>
 
-{#if gameToUpdate}
-    <EditGame on:accept={acceptUpdateGame} on:close={() => gameToUpdate = null} game={gameToUpdate} />
+    {#if gameToUpdate}
+        <EditGame on:accept={acceptUpdateGame} on:close={() => gameToUpdate = null} game={gameToUpdate} />
+    {/if}
+{:else}
+    <div class="w-full h-full flex flex-col justify-center items-center select-none">
+        <p class="text-white font-lalezar text-4xl mb-4">No Games In Backlog</p>
+        <p>Games that are not currently on a list will end up here</p>
+    </div>
 {/if}
 
