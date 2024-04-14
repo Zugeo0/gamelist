@@ -1,8 +1,4 @@
 
-import axios from "axios";
-
-const apiPath = import.meta.env.VITE_API_URL || '';
-
 export interface GameList {
     id: number,
     name: string,
@@ -16,13 +12,13 @@ export interface GameData {
     artwork_url: string | null,
     release_date: Date | null,
     igdb_id: string | null,
-    metacritic_score: string | null,
+    metacritic_score: number | null,
     steam_id: string | null,
     state: GameState | null,
 }
 
 export interface GameState {
-    game_list: number,
+    game_list: number | null,
     user_rating: number,
     gametime_min: number,
     list_order: number,
@@ -30,151 +26,134 @@ export interface GameState {
     last_played: Date | null,
 }
 
+let games: GameData[] = [
+    {
+        id: 1,
+        name: 'Disco Elysium',
+        description: 'Disco  Elysium: The Final Cut is a groundbreaking role playing game. You’re a  detective with a unique skill system at your disposal and a whole city  to carve your path across.\n\nInterrogate unforgettable characters, crack  murders or take bribes. Become a hero or an absolute disaster of a human  being.\n\nThe Final Cut adds full voice acting to the game, as well as new  quests, more characters and fresh explorable areas.', genres: ['RPG', 'Adventure'],
+        artwork_url: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ffs-prod-cdn.nintendo-europe.com%2Fmedia%2Fimages%2F10_share_images%2Fgames_15%2Fnintendo_switch_4%2FH2x1_NSwitch_DiscoElysiumTheFinalCut_image1600w.jpg&f=1&nofb=1&ipt=362c2245869b9ddcca432fad34c2af5dd67a3a24e609c79c1c2c48f5b841048c&ipo=images',
+        release_date: new Date('2019-04-27'),
+        igdb_id: null,
+        metacritic_score: 92,
+        steam_id: null,
+        state: {
+            game_list: 1,
+            user_rating: 0,
+            gametime_min: 0,
+            list_order: 0,
+            custom_status: '',
+            last_played: null,
+        }
+    },
+    {
+        id: 2,
+        name: 'Yakuza Kiwami',
+        description: 'Yakuza Kiwami is a remake of the 2005 open world action-adventure game Yakuza.',
+        genres: ['RPG', 'Adventure'],
+        artwork_url: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fgugimages.s3.us-east-2.amazonaws.com%2Fwp-content%2Fuploads%2F2020%2F09%2F30220155%2Fdeb92e3e-76fb-4d54-abfb-202612c3fcf7.jpeg&f=1&nofb=1&ipt=67ba33c8a986bc60077224940f92390e3e859817aa3f1180a33e3a4acb4b016f&ipo=images',
+        release_date: new Date('2017-08-29'),
+        igdb_id: null,
+        metacritic_score: 81,
+        steam_id: null,
+        state: {
+            game_list: 1,
+            user_rating: 0,
+            gametime_min: 0,
+            list_order: 0,
+            custom_status: '',
+            last_played: null,
+        }
+    }
+];
+
+let gamelists: GameList[] = [
+    {
+        id: 1,
+        name: 'Main',
+    }
+];
+
+let nextGameId = 3;
+let nextGamelistId = 2;
+
 
 export async function moveGameToList(gameid: number, listid: number) {
-    await axios(apiPath + `/api/games/${gameid}/move/${listid}`, {
-        method: "PUT",
-    });
+    const game = games.find(game => game.id === gameid);
+
+    if (!game || !game.state) {
+        return;
+    }
+
+    game.state.game_list = listid;
 }
 
 export async function moveGameToBacklog(gameid: number) {
-    await axios(apiPath + `/api/games/${gameid}/move/backlog`, {
-        method: "PUT",
-    });
+    const game = games.find(game => game.id === gameid);
+
+    if (!game || !game.state) {
+        return;
+    }
+
+    game.state.game_list = null;
 }
 
 export async function updateGame(
-    id: number,
-    name: string,
-    description: string,
-    genres: string[],
-    artwork_url: string | null,
-    release_date: Date | null,
-    igdb_id: string | null,
-    steam_id: string | null,
-): Promise<GameData> {
-    let response = await axios(apiPath + `/api/games/${id}`, {
-        method: "PUT",
-        data: {
-            Name: name,
-            Description: description,
-            Genres: genres,
-            ArtworkUrl: artwork_url,
-            ReleaseDate: release_date,
-            IgdbId: igdb_id,
-            SteamId: steam_id,
-        },
-    });
-
-    return mapToGameData(response.data);
-}
-
-export async function createGame(
-    name: string,
-    description: string,
-    genres: string[],
-    artwork_url: string | null,
-    release_date: Date | null,
-    igdb_id: string | null,
-    steam_id: string | null,
-
-): Promise<GameData> {
-    let response = await axios(apiPath + "/api/games", {
-        method: "POST",
-        data: {
-            Name: name,
-            Description: description,
-            Genres: genres,
-            ArtworkUrl: artwork_url,
-            ReleaseDate: release_date,
-            IgdbId: igdb_id,
-            SteamId: steam_id,
-        },
-    });
-
-    return mapToGameData(response.data);
-}
-
-export async function getGamesInList(listid: number): Promise<GameData[]> {
-    let response = await axios(apiPath + `/api/gamelists/${listid}/games`);
-    let games: any[] = response.data;
-
-    return games.map(mapToGameData);
-}
-
-export async function createGameList(name: string): Promise<GameList> {
-    let response = await axios(apiPath + "/api/gamelists", {
-        method: "POST",
-        data: {
-            name: name
-        },
-    });
-
-    return {
-        id: response.data.ID,
-        name: response.data.Name,
-    };
-}
-
-export async function deleteGameList(id: number) {
-    await axios(apiPath + "/api/gamelists/" + id, {
-        method: "DELETE",
-    });
-}
-
-export async function getGameLists(): Promise<GameList[]> {
-    let response = await axios(apiPath + "/api/gamelists")
-    let gamelists: GameList[] = [];
-
-    response.data.forEach((gamelist: any) => {
-        gamelists.push({
-            id: gamelist.ID,
-            name: gamelist.Name,
-        })
-    })
-
-    return gamelists;
-}
-
-export async function getGameList(id: number): Promise<GameList> {
-    let response = await axios(apiPath + "/api/gamelists/" + id);
-    let gamelist = response.data;
-
-    return {
-        id: gamelist.ID,
-        name: gamelist.Name,
-    };
-}
-
-export async function getFrontGameInList(listid: number): Promise<GameData | null> {
-    let response = await axios(apiPath + "/api/gamelists/" + listid + "/front");
-    let game = response.data;
+    newGame: GameData
+): Promise<GameData | null> {
+    const game = games.find(game => game.id === newGame.id);
 
     if (!game) {
         return null;
     }
 
-    return mapToGameData(game);
+    game.name = newGame.name;
+    game.description = newGame.description;
+    game.genres = newGame.genres;
+    game.artwork_url = newGame.artwork_url;
+    game.release_date = newGame.release_date;
+    game.igdb_id = newGame.igdb_id;
+    game.steam_id = newGame.steam_id;
+
+    return game;
 }
 
-function mapToGameData(game: any): GameData {
-    return {
-        id: game.ID,
-        name: game.Name,
-        description: game.Description,
-        genres: game.Genres,
-        artwork_url: game.ArtworkUrl,
-        release_date: game.ReleaseDate,
-        igdb_id: game.IgdbId,
-        metacritic_score: game.MetacriticScore,
-        steam_id: game.SteamId,
-        state: {
-            game_list: game.GameList,
-            user_rating: game.UserRating,
-            gametime_min: game.GametimeMin,
-            list_order: game.ListOrder,
-            custom_status: game.CustomStatus,
-            last_played: game.LastPlayed,
-        },
-    }
+export async function createGame(
+    gameData: GameData
+): Promise<GameData> {
+    const newGame = {...gameData};
+    newGame.id = nextGameId++;
+    games.push(newGame);
+    return newGame;
 }
+
+export async function getGamesInList(listid: number): Promise<GameData[]> {
+    return games.filter(game => game.state?.game_list == listid);
+}
+
+export async function createGameList(name: string): Promise<GameList> {
+    const gamelist = {
+        id: nextGamelistId++,
+        name: name,
+    };
+    gamelists.push(gamelist);
+    return gamelist;
+}
+
+export async function deleteGameList(id: number) {
+    gamelists = gamelists.filter(list => list.id != id);
+}
+
+export async function getGameLists(): Promise<GameList[]> {
+    return [...gamelists];
+}
+
+export async function getGameList(id: number): Promise<GameList | null> {
+    const lists = gamelists.filter(list => list.id == id);
+    return lists.length > 0 ? lists[0] : null;
+}
+
+export async function getFrontGameInList(listid: number): Promise<GameData | null> {
+    const gamesInList = games.filter(list => list.state?.game_list == listid);
+    return gamesInList.length > 0 ? gamesInList[0] : null;
+}
+
