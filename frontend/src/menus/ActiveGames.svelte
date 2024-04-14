@@ -5,6 +5,7 @@
     import { getGameLists, setGameCompleted, type GameList, getFrontGameInList, type GameData, moveGameToBacklog, updateGameRating } from "../api";
     import Dropdown from "../components/Dropdown.svelte";
     import { onMount } from "svelte";
+    import { navigate } from "svelte-routing";
 
     let activeList: GameList | null = null;
 
@@ -42,6 +43,7 @@
     async function completeActiveGame() {
         setGameCompleted(game!.id, true);
         game = await getFrontGameInList(activeList!.id);
+        navigate("/completions");
     }
 
     async function moveActiveGameToBacklog() {
