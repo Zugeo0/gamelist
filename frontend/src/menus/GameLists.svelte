@@ -1,7 +1,7 @@
 
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import { getGameLists, type GameData, type GameList, getFrontGameInList, getGamesInList, createGame, moveGameToList, updateGame, moveGameToBacklog } from "../api";
+    import { getGameLists, deleteGame, type GameData, type GameList, getUncompletedGamesInList, createGame, moveGameToList, updateGame, moveGameToBacklog, setGameCompleted } from "../api";
     import Dropdown from "../components/Dropdown.svelte";
     import GameInfo from "../components/GameInfo.svelte";
     import EditGame from "../components/EditGame.svelte";
@@ -24,7 +24,7 @@
         }
 
         activeList = gamelists[0];
-        games = await getGamesInList(activeList.id);
+        games = await getUncompletedGamesInList(activeList.id);
     }
 
     function createNewGame() {
@@ -52,15 +52,7 @@
         }
 
         try {
-            let newGame = await createGame(
-                gameData.name,
-                gameData.description,
-                gameData.genres,
-                gameData.artwork_url,
-                gameData.release_date,
-                gameData.igdb_id,
-                gameData.steam_id,
-            );
+            let newGame = await createGame(gameData);
             await moveGameToList(newGame.id, activeList.id);
 
             games = [...games, newGame];
@@ -81,16 +73,8 @@
             let gameInList = games.find(game => game.id == gameData.id)!;
             let gameIndex = games.indexOf(gameInList);
 
-            games[gameIndex] = await updateGame(
-                gameData.id,
-                gameData.name,
-                gameData.description,
-                gameData.genres,
-                gameData.artwork_url,
-                gameData.release_date,
-                gameData.igdb_id,
-                gameData.steam_id,
-            );
+            // the id should always be correct so this should never return null
+            games[gameIndex] = await updateGame(gameData) as GameData;
             activeGame = games[gameIndex];
         } catch (e) {
             console.log(e);
@@ -99,20 +83,61 @@
 
     async function changeGameList(event: CustomEvent<number>) {
         activeList = gamelists.filter(list => list.id == event.detail)[0];
-        games = await getGamesInList(activeList.id);
+        games = await getUncompletedGamesInList(activeList.id);
     }
 
     async function moveActiveGameToBacklog() {
         if (!activeGame) {
             return;
         }
+
         moveGameToBacklog(activeGame.id);
+        games = await getUncompletedGamesInList(activeList!.id);
+        activeGame = null;
     }
 
     async function deleteActiveGame() {
+        if (!activeGame) {
+            return;
+        }
 
+        if (!confirm(`Are you sure you want to delete ${activeGame.name}?`)) {
+            return;
+        }
+
+        deleteGame(activeGame!.id);
+        games = await getUncompletedGamesInList(activeList!.id);
+        activeGame = null;
     }
 
+    async function completeActiveGame() {
+        if (!activeGame) {
+            return;
+        }
+
+        setGameCompleted(activeGame.id, true);
+        games = await getUncompletedGamesInList(activeList!.id);
+        activeGame = games[0] ?? null;
+    }
+
+    function formatDate(date: Date): string {
+        let month = '';
+        switch (date.getMonth()) {
+            case 0:  month = 'Jan'; break;
+            case 1:  month = 'Feb'; break;
+            case 2:  month = 'Mar'; break;
+            case 3:  month = 'Apr'; break;
+            case 4:  month = 'May'; break;
+            case 5:  month = 'Jun'; break;
+            case 6:  month = 'Jul'; break;
+            case 7:  month = 'Aug'; break;
+            case 8:  month = 'Sep'; break;
+            case 9:  month = 'Oct'; break;
+            case 10: month = 'Nov'; break;
+            case 11: month = 'Dec'; break;
+        }
+        return `${date.getDay()}. ${month} ${date.getFullYear()}`
+    }
 </script>
 
 {#await refresh()}
@@ -146,7 +171,7 @@
 
                 {/if}
 
-                <GameInfo on:click={() => activeGame = game} selected={game == activeGame} {game} />
+                <GameInfo on:click={() => activeGame = game} selected={game === activeGame} {game} />
 
             {/each}
 
@@ -159,7 +184,7 @@
             {/if}
 
         </div>
-        <div class="h-full flex-grow bg-crust flex flex-col">
+        <div class="h-full flex-grow bg-crust flex flex-col justify-between">
             {#if activeGame}
 
                 <!-- Artwork -->
@@ -175,35 +200,36 @@
 
                         <!-- Last Played Display -->
                         <p class="select-none mx-2">Last Played</p>
-                        <p class="select-none text-mauve font-bold mr-6">{activeGame?.state?.last_played ?? "Never"}</p>
+                        <p class="select-none text-mauve font-bold mr-6">{activeGame.state?.last_played ? formatDate(activeGame.state?.last_played) : "Never"}</p>
 
                         <!-- Playtime Display -->
-                        <Icon width={20} height={20} icon="mingcute:time-fill" />
-                        <p class="select-none">{activeGame?.state?.gametime_min ?? 0 / 60}</p>
+                        {#if activeGame.state && activeGame.state.gametime_min > 0}
+                            <Icon width={20} height={20} icon="mingcute:time-fill" />
+                            <p class="select-none">{activeGame.state.gametime_min < 60 ? `${activeGame.state.gametime_min} minutes` : `${Math.round(activeGame.state.gametime_min / 6) / 10} hours`}</p>
+                        {/if}
 
                     </div>
 
                     <!-- Right Side -->
-                    <div class="h-full w-full flex flex-row-reverse gap-2 items-center">
+                    <div class="h-full flex flex-row-reverse gap-2 items-center">
 
                         <!-- Complete Game Button -->
-                        <button class="mr-2 px-2 h-6 bg-mantle rounded-md border border-green text-green font-bold flex flex-row items-center gap-2 hover:bg-green hover:text-black">
-                            COMPLETE
+                        <button on:click={completeActiveGame} class="mr-2 px-2 h-6 bg-mantle rounded-md border border-green text-green font-bold flex flex-row items-center gap-2 hover:bg-green hover:text-black">
                             <Icon width={16} icon="fluent-mdl2:completed-solid" />
                         </button>
 
                         <!-- Delete Game Button -->
-                        <button on:click={deleteActiveGame} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
+                        <button on:click={deleteActiveGame} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-red hover:border-red hover:text-black">
                             <Icon width={20} icon="lets-icons:remove-fill" />
                         </button>
 
                         <!-- Move To Backlog Button -->
-                        <button on:click={moveActiveGameToBacklog} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
+                        <button on:click={moveActiveGameToBacklog} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-peach hover:border-peach hover:text-black">
                             <Icon width={16} icon="fa6-solid:dumpster" />
                         </button>
 
                         <!-- Edit Button -->
-                        <button on:click={editActiveGame} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-base">
+                        <button on:click={editActiveGame} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-blue hover:border-blue hover:text-black">
                             Edit
                             <Icon width={16} icon="material-symbols:edit" />
                         </button>

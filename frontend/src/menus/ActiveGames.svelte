@@ -2,7 +2,7 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
     import Rating from "../components/Rating.svelte";
-    import { getGameLists, type GameList, getFrontGameInList, type GameData, updateGame } from "../api";
+    import { getGameLists, setGameCompleted, type GameList, getFrontGameInList, type GameData, updateGame, deleteGame, moveGameToBacklog, updateGameRating } from "../api";
     import EditGame from "../components/EditGame.svelte";
     import Dropdown from "../components/Dropdown.svelte";
 
@@ -10,8 +10,6 @@
 
     let gamelists: GameList[];
     let game: GameData | null;
-
-    let editGame: GameData | null;
 
     async function refresh() {
         gamelists = await getGameLists();
@@ -24,28 +22,42 @@
         game = await getFrontGameInList(activeList.id);
     }
 
-    function editActiveGame() {
-        editGame = game;
+    async function completeActiveGame() {
+        setGameCompleted(game!.id, true);
+        game = await getFrontGameInList(activeList!.id);
     }
 
-    async function acceptEditGame(event: CustomEvent<GameData>) {
-        editGame = null;
-        let gameData = event.detail;
+    async function deleteActiveGame() {
+        deleteGame(game!.id);
+        game = await getFrontGameInList(activeList!.id);
+    }
 
-        try {
-            game = await updateGame(
-                gameData.id,
-                gameData.name,
-                gameData.description,
-                gameData.genres,
-                gameData.artwork_url,
-                gameData.release_date,
-                gameData.igdb_id,
-                gameData.steam_id,
-            );
-        } catch (e) {
-            console.log(e);
+    async function moveActiveGameToBacklog() {
+        moveGameToBacklog(game!.id);
+        game = await getFrontGameInList(activeList!.id);
+    }
+
+    async function setActiveGameRating(event: CustomEvent<number>) {
+        updateGameRating(game!.id, event.detail);
+    }
+
+    function formatDate(date: Date): string {
+        let month = '';
+        switch (date.getMonth()) {
+            case 0:  month = 'Jan'; break;
+            case 1:  month = 'Feb'; break;
+            case 2:  month = 'Mar'; break;
+            case 3:  month = 'Apr'; break;
+            case 4:  month = 'May'; break;
+            case 5:  month = 'Jun'; break;
+            case 6:  month = 'Jul'; break;
+            case 7:  month = 'Aug'; break;
+            case 8:  month = 'Sep'; break;
+            case 9:  month = 'Oct'; break;
+            case 10: month = 'Nov'; break;
+            case 11: month = 'Dec'; break;
         }
+        return `${date.getDate()}. ${month} ${date.getFullYear()}`
     }
 </script>
 
@@ -57,10 +69,10 @@
         <img class="select-none w-full h-2/5 object-cover" src={game?.artwork_url ?? "https://source.unsplash.com/random"} alt="Artwork">
 
         <!-- Control Bar -->
-        <div class="h-8 bg-crust flex flex-row gap-2 items-center border-t border-b border-black">
+        <div class="h-8 bg-crust flex flex-row justify-between gap-2 items-center border-t border-b border-black">
 
             <!-- Left Side -->
-            <div class="h-full w-full flex flex-row gap-2 items-center">
+            <div class="h-full flex flex-row gap-2 items-center">
 
                 <!-- Game List Selection Dropdown -->
                 <Dropdown {gamelists} />
@@ -69,40 +81,33 @@
                 {#if game}
                     <!-- Last Played Display -->
                     <p class="select-none mx-2">Last Played</p>
-                    <p class="select-none text-mauve font-bold mr-6">{game?.state?.last_played ?? "Never"}</p>
+                    <p class="select-none text-mauve font-bold mr-6">{game.state?.last_played ? formatDate(game.state?.last_played) : "Never"}</p>
 
                     <!-- Playtime Display -->
-                    <Icon width={20} height={20} icon="mingcute:time-fill" />
-                    <p class="select-none">{game?.state?.gametime_min ?? 0 / 60}</p>
+                    {#if game.state && game.state.gametime_min > 0}
+                        <Icon width={20} height={20} icon="mingcute:time-fill" />
+                        <p class="select-none">{game.state.gametime_min < 60 ? `${Math.round(game.state.gametime_min)} minutes` : `${Math.round(game.state.gametime_min / 6) / 10} hours`}</p>
+                    {/if}
                 {/if}
             </div>
 
             <!-- Right Side -->
-            <div class="h-full w-full flex flex-row-reverse gap-2 items-center">
-                {#if game}
+            <div class="h-full flex flex-row-reverse gap-2 items-center">
+                {#if game && game.state}
                     <!-- Complete Game Button -->
-                    <button class="mr-2 px-2 h-6 bg-mantle rounded-md border border-green text-green font-bold flex flex-row items-center gap-2 hover:bg-green hover:text-black">
+                    <button on:click={completeActiveGame} class="mr-2 px-2 h-6 bg-mantle rounded-md border border-green text-green font-bold flex flex-row items-center gap-2 hover:bg-green hover:text-black">
                         COMPLETE
                         <Icon width={16} icon="fluent-mdl2:completed-solid" />
                     </button>
 
-                    <!-- Delete Game Button -->
-                    <button class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
-                        <Icon width={20} icon="lets-icons:remove-fill" />
-                    </button>
-
                     <!-- Move To Backlog Button -->
-                    <button class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
+                    <button on:click={moveActiveGameToBacklog} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-peach hover:border-peach hover:text-black">
                         <Icon width={16} icon="fa6-solid:dumpster" />
                     </button>
 
-                    <!-- Edit Button -->
-                    <button on:click={editActiveGame} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-base">
-                        Edit
-                        <Icon width={16} icon="material-symbols:edit" />
-                    </button>
-
-                    <Rating class="mx-2" rating={game?.state?.user_rating ?? 0} max={5} />
+                    {#if game.state.last_played}
+                        <Rating on:update={setActiveGameRating} class="mx-2" rating={game.state.user_rating ?? 0} max={5} />
+                    {/if}
                 {/if}
             </div>
         </div>
@@ -121,10 +126,5 @@
                 </p>
             {/if}
         </div>
-
-        <!-- Edit Menu -->
-        {#if editGame}
-            <EditGame on:close={() => editGame = null} on:accept={acceptEditGame} game={editGame} />
-        {/if}
     </div>
 {/await}
