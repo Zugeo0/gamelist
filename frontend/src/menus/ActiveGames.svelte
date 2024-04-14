@@ -12,15 +12,20 @@
     let game: GameData | null;
 
     onMount(async () => {
+        await updateGameLists();
+    });
+
+    async function updateGameLists() {
         gamelists = await getGameLists();
 
         if (gamelists.length == 0) {
+            activeList = null;
             return;
         }
 
         activeList = gamelists[0];
         game = await getFrontGameInList(activeList.id);
-    });
+    }
 
     async function completeActiveGame() {
         setGameCompleted(game!.id, true);
@@ -59,7 +64,9 @@
 {#if activeList}
     <div class="w-full h-full flex-col">
         <!-- Artwork -->
-        <img class="select-none w-full h-2/5 object-cover" src={game?.artwork_url ?? "https://source.unsplash.com/random"} alt="Artwork">
+        {#if game?.artwork_url}
+            <img class="select-none w-full h-2/5 object-cover" src={game.artwork_url} alt="Artwork">
+        {/if}
 
         <!-- Control Bar -->
         <div class="h-8 bg-crust flex flex-row justify-between gap-2 items-center border-t border-b border-black">
@@ -68,7 +75,7 @@
             <div class="h-full flex flex-row gap-2 items-center">
 
                 <!-- Game List Selection Dropdown -->
-                <Dropdown {gamelists} />
+                <Dropdown on:listUpdated={updateGameLists} {gamelists} />
 
                 <!-- Game Info -->
                 {#if game}
@@ -117,7 +124,17 @@
                 <p>
                     {game.description || "No description"}
                 </p>
+            {:else}
+                <div class="w-full h-full flex flex-col justify-center items-center select-none">
+                    <p class="text-white font-lalezar text-4xl mb-4">No Active Game</p>
+                    <p>Go to Game Lists to add a game to this game list</p>
+                </div>
             {/if}
         </div>
+    </div>
+{:else}
+    <div class="w-full h-full flex flex-col justify-center items-center select-none">
+        <p class="text-white font-lalezar text-4xl mb-4">No Game Lists</p>
+        <p>Go to Game Lists to create a new game list</p>
     </div>
 {/if}

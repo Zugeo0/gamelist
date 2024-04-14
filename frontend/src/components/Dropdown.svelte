@@ -1,9 +1,9 @@
 
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import { createGameList, getGameLists, type GameList, deleteGameList } from "../api";
+    import { createGameList, type GameList, deleteGameList } from "../api";
     import { createEventDispatcher } from "svelte";
-    import { twJoin, twMerge } from "tailwind-merge";
+    import { twMerge } from "tailwind-merge";
 
     export let gamelists: GameList[];
     export let bg: string = "";
@@ -37,6 +37,7 @@
         if (confirm(`Are you sure you want to delete '${list?.name}'?`)) {
             await deleteGameList(id);
             gamelists = gamelists.filter(list => list.id != id);
+            dispatch("listUpdated");
         }
     }
 </script>

@@ -7,6 +7,7 @@
     // Pages
     import ActiveGames from "./menus/ActiveGames.svelte";
     import GameLists from "./menus/GameLists.svelte";
+    import Backlog from "./menus/Backlog.svelte";
 </script>
 
 <Router>
@@ -47,5 +48,6 @@
         </Navbar>
         <Route path="/" component={ActiveGames} />
         <Route path="/games" component={GameLists} />
+        <Route path="/backlog" component={Backlog} />
     </main>
 </Router>

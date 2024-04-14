@@ -39,11 +39,11 @@ let games: GameData[] = [
         metacritic_score:  92,
         steam_id:          null,
         state: {
-            game_list:     1,
+            game_list:     null,
             user_rating:   4,
             gametime_min:  975,
             list_order:    0,
-            custom_status: '',
+            custom_status: 'On Hold',
             completed:     false,
             last_played:   new Date('2024-04-13'),
         }
@@ -80,6 +80,16 @@ let gamelists: GameList[] = [
 let nextGameId = 3;
 let nextGamelistId = 2;
 
+export async function updateGameStatus(gameid: number, status: string): Promise<GameData | null> {
+    const game = games.find(game => game.id === gameid);
+
+    if (!game || !game.state) {
+        return null;
+    }
+
+    game.state.custom_status = status;
+    return game;
+}
 
 export async function updateGameRating(gameid: number, rating: number): Promise<GameData | null> {
     const game = games.find(game => game.id === gameid);
@@ -159,8 +169,12 @@ export async function getGamesInList(listid: number): Promise<GameData[]> {
     return games.filter(game => game.state?.game_list == listid);
 }
 
+export async function getGamesInBacklog(): Promise<GameData[]> {
+    return games.filter(game => game.state?.game_list === null && !game.state?.completed);
+}
+
 export async function getUncompletedGamesInList(listid: number): Promise<GameData[]> {
-    return games.filter(game => game.state?.game_list == listid && !game.state.completed);
+    return games.filter(game => game.state?.game_list === listid && !game.state.completed);
 }
 
 export async function createGameList(name: string): Promise<GameList> {
