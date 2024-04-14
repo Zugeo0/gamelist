@@ -2,8 +2,7 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
     import Rating from "../components/Rating.svelte";
-    import { getGameLists, setGameCompleted, type GameList, getFrontGameInList, type GameData, updateGame, deleteGame, moveGameToBacklog, updateGameRating } from "../api";
-    import EditGame from "../components/EditGame.svelte";
+    import { getGameLists, setGameCompleted, type GameList, getFrontGameInList, type GameData, moveGameToBacklog, updateGameRating } from "../api";
     import Dropdown from "../components/Dropdown.svelte";
 
     let activeList: GameList | null = null;
@@ -24,11 +23,6 @@
 
     async function completeActiveGame() {
         setGameCompleted(game!.id, true);
-        game = await getFrontGameInList(activeList!.id);
-    }
-
-    async function deleteActiveGame() {
-        deleteGame(game!.id);
         game = await getFrontGameInList(activeList!.id);
     }
 
