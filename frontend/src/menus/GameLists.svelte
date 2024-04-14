@@ -1,7 +1,7 @@
 
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import { getGameLists, type GameData, type GameList, getFrontGameInList, getGamesInList, createGame, moveGameToList, updateGame } from "../api";
+    import { getGameLists, type GameData, type GameList, getFrontGameInList, getGamesInList, createGame, moveGameToList, updateGame, moveGameToBacklog } from "../api";
     import Dropdown from "../components/Dropdown.svelte";
     import GameInfo from "../components/GameInfo.svelte";
     import EditGame from "../components/EditGame.svelte";
@@ -102,6 +102,17 @@
         games = await getGamesInList(activeList.id);
     }
 
+    async function moveActiveGameToBacklog() {
+        if (!activeGame) {
+            return;
+        }
+        moveGameToBacklog(activeGame.id);
+    }
+
+    async function deleteActiveGame() {
+
+    }
+
 </script>
 
 {#await refresh()}
@@ -141,7 +152,7 @@
 
             {#if activeList}
                 <div class="w-full h-14 flex justify-center items-center">
-                    <button on:click={createNewGame} class="bg-base rounded-lg p-1 w-24 hover:bg-surface0">
+                    <button on:click={createNewGame} class="bg-base rounded-lg p-1 w-24 font-bold hover:bg-surface0">
                         +
                     </button>
                 </div>
@@ -182,12 +193,12 @@
                         </button>
 
                         <!-- Delete Game Button -->
-                        <button class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
+                        <button on:click={deleteActiveGame} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
                             <Icon width={20} icon="lets-icons:remove-fill" />
                         </button>
 
                         <!-- Move To Backlog Button -->
-                        <button class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
+                        <button on:click={moveActiveGameToBacklog} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-base">
                             <Icon width={16} icon="fa6-solid:dumpster" />
                         </button>
 
