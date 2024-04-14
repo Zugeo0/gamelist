@@ -27,6 +27,18 @@
         game = await getFrontGameInList(activeList.id);
     }
 
+    async function setGameList(event: CustomEvent<number>) {
+        const listId = event.detail;
+        activeList = gamelists.find(list => list.id == listId) ?? null;
+
+        if (!activeList) {
+            game = null;
+            return;
+        }
+
+        game = await getFrontGameInList(activeList.id);
+    }
+
     async function completeActiveGame() {
         setGameCompleted(game!.id, true);
         game = await getFrontGameInList(activeList!.id);
@@ -75,7 +87,7 @@
             <div class="h-full flex flex-row gap-2 items-center">
 
                 <!-- Game List Selection Dropdown -->
-                <Dropdown on:listUpdated={updateGameLists} {gamelists} />
+                <Dropdown on:listUpdated={updateGameLists} on:select={setGameList} {gamelists} />
 
                 <!-- Game Info -->
                 {#if game}
@@ -126,7 +138,7 @@
                 </p>
             {:else}
                 <div class="w-full h-full flex flex-col justify-center items-center select-none">
-                    <p class="text-white font-lalezar text-4xl mb-4">No Active Game</p>
+                    <p class="text-white font-lalezar text-4xl mb-4">No Active Game in {activeList.name}</p>
                     <p>Go to Game Lists to add a game to this game list</p>
                 </div>
             {/if}

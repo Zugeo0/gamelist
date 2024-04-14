@@ -39,7 +39,7 @@ let games: GameData[] = [
         metacritic_score:  92,
         steam_id:          null,
         state: {
-            game_list:     null,
+            game_list:     1,
             user_rating:   4,
             gametime_min:  975,
             list_order:    0,
