@@ -9,6 +9,8 @@
     import GameLists from "./menus/GameLists.svelte";
     import Backlog from "./menus/Backlog.svelte";
     import Completions from "./menus/Completions.svelte";
+    import Suggestions from "./menus/Suggestions.svelte";
+    import Upcoming from "./menus/Upcoming.svelte";
 </script>
 
 <Router>
@@ -51,5 +53,7 @@
         <Route path="/games" component={GameLists} />
         <Route path="/backlog" component={Backlog} />
         <Route path="/completions" component={Completions} />
+        <Route path="/suggestions" component={Suggestions} />
+        <Route path="/upcoming" component={Upcoming} />
     </main>
 </Router>
