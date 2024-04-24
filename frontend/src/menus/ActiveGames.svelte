@@ -78,8 +78,12 @@
 {#if activeList}
     <div class="w-full h-full flex-col">
         <!-- Artwork -->
-        {#if game?.artwork_url}
-            <img class="select-none w-full h-2/5 object-cover" src={game.artwork_url} alt="Artwork">
+        {#if game}
+            <div class="w-full h-1/2 bg-crust border-l border-l-base flex justify-center items-center overflow-hidden">
+                {#if game.artwork_url}
+                    <img class="select-none h-full w-full object-cover" src={game.artwork_url} alt="Artwork">
+                {/if}
+            </div>
         {/if}
 
         <!-- Control Bar -->

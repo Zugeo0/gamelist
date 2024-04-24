@@ -194,16 +194,19 @@
 
         </div>
 
-        <div class="h-full flex-grow bg-crust flex flex-col justify-between">
+        <!-- Game Controls -->
+        <div class="h-full flex-grow bg-mantle flex flex-col justify-between">
             {#if activeGame}
 
                 <!-- Artwork -->
-                {#if activeGame.artwork_url}
-                    <img class="select-none h-2/5 object-cover border-b border-b-overlay0" src={activeGame.artwork_url} alt="Artwork">
-                {/if}
+                <div class="w-full h-1/2 bg-crust border-l border-l-base flex justify-center items-center overflow-hidden">
+                    {#if activeGame.artwork_url}
+                        <img class="select-none h-full w-full object-cover" src={activeGame.artwork_url} alt="Artwork">
+                    {/if}
+                </div>
 
                 <!-- Control Bar -->
-                <div class="h-8 bg-crust flex flex-row gap-2 items-center border-b border-black">
+                <div class="h-8 bg-crust flex flex-row gap-2 items-center border-y border-black">
 
                     <!-- Left Side -->
                     <div class="h-full w-full flex flex-row gap-2 items-center">
@@ -247,6 +250,7 @@
                     </div>
                 </div>
 
+                <!-- Game Info -->
                 <div class="w-full px-4 py-8 flex-grow">
                     <h1 class="text-5xl font-lalezar text-white mb-4">
                         {activeGame.name}
