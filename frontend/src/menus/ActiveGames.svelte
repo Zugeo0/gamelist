@@ -131,7 +131,7 @@
         </div>
 
         <!-- Game Info -->
-        <div class="h-full p-4 pt-8">
+        <div class="flex-grow p-4 pt-8">
             {#if game}
                 <!-- Game title -->
                 <h1 class="text-5xl font-lalezar text-white mb-4">
