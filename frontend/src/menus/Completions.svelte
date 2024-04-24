@@ -32,8 +32,10 @@
     }
 
     async function moveToList(id: number) {
-        setGameCompleted(id, false);
-        games = games.filter(game => game.id !== id);
+        if (confirm('Are you sure you want to mark this game as uncompleted?')) {
+            setGameCompleted(id, false);
+            games = games.filter(game => game.id !== id);
+        }
     }
 </script>
 
