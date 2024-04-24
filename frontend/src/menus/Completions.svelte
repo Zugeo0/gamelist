@@ -50,7 +50,7 @@
                     </div>
 
                     <!-- Last Played -->
-                    <div class="w-24 flex flex-col justify-center items-center gap-1 mx-4 text-mauve">
+                    <div class="w-28 flex flex-col justify-center items-center gap-1 mx-4 text-mauve">
                         <Icon width={24} icon="bxs:calendar" />
                         <p>{game.state.last_played ? formatDate(game.state.last_played) : "Never"}</p>
                     </div>
@@ -69,6 +69,7 @@
         {/each}
     </div>
 {:else}
+    <!-- No games message -->
     <div class="w-full h-full flex flex-col justify-center items-center select-none">
         <p class="text-white font-lalezar text-4xl mb-4">No Completed Games</p>
         <p>Games marked as completed will end up here</p>
