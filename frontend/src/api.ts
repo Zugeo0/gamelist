@@ -116,21 +116,29 @@ export async function setGameCompleted(gameid: number, completed: boolean) {
 export async function moveGameToList(gameid: number, listid: number) {
     const game = games.find(game => game.id === gameid);
 
-    if (!game || !game.state) {
+    if (!game) {
         return;
     }
 
-    game.state.game_list = listid;
+    if (!game.state) {
+        await attachState(game.id);
+    }
+
+    game.state!.game_list = listid;
 }
 
 export async function moveGameToBacklog(gameid: number) {
     const game = games.find(game => game.id === gameid);
 
-    if (!game || !game.state) {
+    if (!game) {
         return;
     }
 
-    game.state.game_list = null;
+    if (!game.state) {
+        await attachState(game.id);
+    }
+
+    game.state!.game_list = null;
 }
 
 export async function deleteGame(id: number) {
@@ -175,6 +183,43 @@ export async function createGame(
     newGame.id = nextGameId++;
     games.push(newGame);
     return newGame;
+}
+
+export async function attachState(
+    id: number,
+    defaultList: number | null = null,
+): Promise<GameState | null> {
+    const game = games.find(game => game.id === id);
+
+    if (!game || game.state) {
+        return null;
+    }
+
+    const state = {
+        game_list:     defaultList,
+        user_rating:   0,
+        gametime_min:  0,
+        list_order:    Math.max(...games.map(game => game.state?.list_order ?? 0)) + 1,
+        custom_status: '',
+        completed:     false,
+        last_played:   null,
+    }
+
+    game.state = state;
+    
+    return state;
+}
+
+export async function detachState(
+    id: number,
+) {
+    const game = games.find(game => game.id === id);
+
+    if (!game || !game.state) {
+        return null;
+    }
+    
+    game.state = null;
 }
 
 export async function getGamesInList(listid: number): Promise<GameData[]> {
