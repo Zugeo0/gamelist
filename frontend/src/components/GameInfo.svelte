@@ -27,6 +27,11 @@
         <!-- Game Info -->
         <div class="flex flex-row gap-4 items-center">
 
+            <!-- Description if no other information is present -->
+            {#if game.genres.length == 0 && !game.release_date && !game.metacritic_score}
+                <p>{game.description || 'No description'}</p>
+            {/if}
+
             <!-- Genres -->
             {#if game.genres.length > 0}
                 <p>{game.genres[0]}</p>
@@ -51,9 +56,13 @@
     <!-- Right Side -->
     <div class="flex-grow flex flex-row-reverse gap-4">
         <!-- Artwork -->
-        {#if game.artwork_url}
-            <img class="select-none w-32 h-full object-cover" src={game.artwork_url} alt="Artwork">
-        {/if}
+        <div class="w-32 h-full bg-crust border-l border-l-base flex justify-center items-center">
+            {#if game.artwork_url}
+                <img class="select-none h-full object-cover" src={game.artwork_url} alt="Artwork">
+            {:else}
+                <p>No Artwork</p>
+            {/if}
+        </div>
 
         <!-- Custom Elements -->
         <slot />
