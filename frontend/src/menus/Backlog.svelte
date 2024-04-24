@@ -2,7 +2,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import GameInfo from "../components/GameInfo.svelte";
-    import { getGamesInBacklog, moveGameToList, updateGame, updateGameStatus, type GameData } from "../api";
+    import { getGamesInBacklog, moveGameToList, updateGame, updateGameStatus, type GameData, deleteGame } from "../api";
     import Icon from "@iconify/svelte";
     import EditGame from "../components/EditGame.svelte";
 
@@ -46,6 +46,13 @@
             games = games.filter(game => game.id !== id);
         }
     }
+
+    async function removeGame(id: number) {
+        if (confirm('Are you sure you want to delete this game?')) {
+            deleteGame(id);
+            games = games.filter(game => game.id != id);
+        }
+    }
 </script>
 
 {#if games.length > 0}
@@ -66,6 +73,11 @@
                 <!-- Edit Button -->
                 <button on:click={() => gameToUpdate = game} class="w-12 my-4 rounded-lg bg-base border border-surface0 opacity-0 group-hover:opacity-100 hover:bg-surface0 hover:border-surface1 flex justify-center items-center">
                     <Icon width={24} icon="material-symbols:edit" />
+                </button>
+
+                <!-- Delete Button -->
+                <button on:click={() => removeGame(game.id)} class="w-12 my-4 rounded-lg bg-base border border-surface0 opacity-0 group-hover:opacity-100 hover:bg-red hover:border-red hover:text-white flex justify-center items-center">
+                    <Icon width={24} icon="material-symbols:delete" />
                 </button>
             </GameInfo>
         {/each}
