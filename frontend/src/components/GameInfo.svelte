@@ -12,7 +12,7 @@
 </script>
 
 <button on:click class={twMerge(
-    "h-24 w-full flex flex-row items-stretch flex-between hover:bg-base transition-all duration-75 border-b border-b-black",
+    "h-24 w-full flex flex-row bg-mantle outline-none items-stretch flex-between hover:bg-base transition-all duration-75 border-b border-b-black",
     selected && "border-l-8 border-l-green bg-base",
     className
 )}>
