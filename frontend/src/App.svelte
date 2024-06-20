@@ -14,7 +14,7 @@
 </script>
 
 <Router>
-    <main class="flex flex-row absolute inset-0">
+    <main class="flex flex-row absolute inset-0 select-none">
         <Navbar>
             <NavbarLink
                 label="Active Games"

@@ -1,158 +1,59 @@
 
 <script lang="ts">
-    import Icon from "@iconify/svelte";
-    import Rating from "../components/Rating.svelte";
-    import { getGameLists, setGameCompleted, type GameList, getFrontGameInList, type GameData, moveGameToBacklog, updateGameRating } from "../api";
-    import Dropdown from "../components/Dropdown.svelte";
-    import { onMount } from "svelte";
-    import { navigate } from "svelte-routing";
+    import { GameListAPI, type GameList } from "../api/GameLists"; 
+    import { GameAPI, type Game } from "../api/Games";
+    import { Link } from 'svelte-routing';
+    import {  } from "@iconify/svelte";
 
-    let activeList: GameList | null = null;
-
-    let gamelists: GameList[];
-    let game: GameData | null;
-
-    onMount(async () => {
-        await updateGameLists();
-        activeList = gamelists[0];
-        game = await getFrontGameInList(activeList.id);
-    });
-
-    async function updateGameLists() {
-        gamelists = await getGameLists();
-
-        if (gamelists.length == 0) {
-            activeList = null;
-            return;
-        }
+    async function fetchLists(): Promise<GameList[]> {
+        return await GameListAPI.all();
     }
 
-    async function setGameList(event: CustomEvent<number>) {
-        await updateGameLists();
-        const listId = event.detail;
-        activeList = gamelists.find(list => list.id == listId) ?? null;
-
-        if (!activeList) {
-            game = null;
-            return;
-        }
-
-        game = await getFrontGameInList(activeList.id);
-    }
-
-    async function completeActiveGame() {
-        setGameCompleted(game!.id, true);
-        game = await getFrontGameInList(activeList!.id);
-        navigate("/completions");
-    }
-
-    async function moveActiveGameToBacklog() {
-        moveGameToBacklog(game!.id);
-        game = await getFrontGameInList(activeList!.id);
-    }
-
-    async function setActiveGameRating(event: CustomEvent<number>) {
-        updateGameRating(game!.id, event.detail);
-    }
-
-    function formatDate(date: Date): string {
-        let month = '';
-        switch (date.getMonth()) {
-            case 0:  month = 'Jan'; break;
-            case 1:  month = 'Feb'; break;
-            case 2:  month = 'Mar'; break;
-            case 3:  month = 'Apr'; break;
-            case 4:  month = 'May'; break;
-            case 5:  month = 'Jun'; break;
-            case 6:  month = 'Jul'; break;
-            case 7:  month = 'Aug'; break;
-            case 8:  month = 'Sep'; break;
-            case 9:  month = 'Oct'; break;
-            case 10: month = 'Nov'; break;
-            case 11: month = 'Dec'; break;
-        }
-        return `${date.getDate()}. ${month} ${date.getFullYear()}`
+    async function fetchFront(list: GameList): Promise<Game | null> {
+        return await GameAPI.front(list)
     }
 </script>
 
-{#if activeList}
-    <div class="w-full h-full flex-col">
-        <!-- Artwork -->
-        {#if game}
-            <div class="w-full h-1/2 bg-crust border-l border-l-base flex justify-center items-center overflow-hidden">
-                {#if game.artwork_url}
-                    <img class="select-none h-full w-full object-cover" src={game.artwork_url} alt="Artwork">
-                {/if}
-            </div>
-        {/if}
+<div class="w-full h-full flex flex-col">
+    {#await fetchLists()}
+        <p>Loading...</p>
+    {:then lists} 
+        {#each lists as list}
+            {#await fetchFront(list)}
+                <p>Loading...</p>
+            {:then game} 
 
-        <!-- Control Bar -->
-        <div class="h-8 bg-crust flex flex-row justify-between gap-2 items-center border-t border-b border-black">
+                <!-- Game List -->
+                <div class="w-full p-3 flex flex-row gap-2 border-b border-base items-stretch h-fit">
 
-            <!-- Left Side -->
-            <div class="h-full flex flex-row gap-2 items-center">
-
-                <!-- Game List Selection Dropdown -->
-                <Dropdown on:listUpdated={updateGameLists} on:select={setGameList} {gamelists} />
-
-                <!-- Game Info -->
-                {#if game}
-                    <!-- Last Played Display -->
-                    <p class="select-none mx-2">Last Played</p>
-                    <p class="select-none text-mauve font-bold mr-6">{game.state?.last_played ? formatDate(game.state?.last_played) : "Never"}</p>
-
-                    <!-- Playtime Display -->
-                    {#if game.state && game.state.gametime_min > 0}
-                        <Icon width={20} height={20} icon="mingcute:time-fill" />
-                        <p class="select-none">{game.state.gametime_min < 60 ? `${Math.round(game.state.gametime_min)} minutes` : `${Math.round(game.state.gametime_min / 6) / 10} hours`}</p>
+                    <!-- Up Next Cover -->
+                    {#if game}
+                        <img class="game h-0 min-h-full" src={game.cover} alt="Game Cover">
+                    {:else}
+                        <div class="game h-0 min-h-full border border-base flex justify-center items-center text-base font-bold text-3xl">
+                            EMPTY
+                        </div>
                     {/if}
-                {/if}
-            </div>
 
-            <!-- Right Side -->
-            <div class="h-full flex flex-row-reverse gap-2 items-center">
-                {#if game && game.state}
-                    <!-- Complete Game Button -->
-                    <button on:click={completeActiveGame} class="mr-2 px-2 h-6 bg-mantle rounded-md border border-green text-green font-bold flex flex-row items-center gap-2 hover:bg-green hover:text-black">
-                        COMPLETE
-                        <Icon width={16} icon="fluent-mdl2:completed-solid" />
-                    </button>
+                    <div class="w-px h-full bg-base"></div>
 
-                    <!-- Move To Backlog Button -->
-                    <button on:click={moveActiveGameToBacklog} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-peach hover:border-peach hover:text-black">
-                        <Icon width={16} icon="fa6-solid:dumpster" />
-                    </button>
+                    <!-- List Details -->
+                    <div class="flex flex-col gap-2 flex-grow">
 
-                    {#if game.state.last_played}
-                        <Rating on:update={setActiveGameRating} class="mx-2" rating={game.state.user_rating ?? 0} max={5} />
-                    {/if}
-                {/if}
-            </div>
-        </div>
+                        <!-- Toolbar -->
+                        <Link to="games" class="toolbar hover:bg-surface0 transition-colors">
+                            <h1 class="font-lalezar my-2 ml-4 mr-auto text-2xl">{list.name}</h1>
+                        </Link>
 
-        <!-- Game Info -->
-        <div class="flex-grow p-4 pt-8">
-            {#if game}
-                <!-- Game title -->
-                <h1 class="text-5xl font-lalezar text-white mb-4">
-                    {game.name}
-                </h1>
+                        <!-- Games -->
+                        <div class="flex flex-row gap-2 h-48">
+                        </div>
 
-                <!-- Game description -->
-                <p>
-                    {game.description || "No description"}
-                </p>
-            {:else}
-                <div class="w-full h-full flex flex-col justify-center items-center select-none">
-                    <p class="text-white font-lalezar text-4xl mb-4">No Active Game in {activeList.name}</p>
-                    <p>Go to Game Lists to add a game to this game list</p>
+                    </div>
+
                 </div>
-            {/if}
-        </div>
-    </div>
-{:else}
-    <div class="w-full h-full flex flex-col justify-center items-center select-none">
-        <p class="text-white font-lalezar text-4xl mb-4">No Game Lists</p>
-        <p>Go to Game Lists to create a new game list</p>
-    </div>
-{/if}
+                
+            {/await}
+        {/each}
+    {/await}
+</div>
