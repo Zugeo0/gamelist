@@ -34,14 +34,14 @@
                         </div>
                     {/if}
 
-                    <div class="w-px h-full bg-base"></div>
+                    <div class="min-w-px h-full bg-base"></div>
 
                     <!-- List Details -->
                     <div class="flex flex-col gap-2 flex-grow">
 
                         <!-- Toolbar -->
                         <div class="toolbar">
-                            <h1 class="font-lalezar my-2 ml-4 mr-auto text-2xl">{list.name}</h1>
+                            <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{list.name}</h1>
                         </div>
 
                         <!-- Games -->

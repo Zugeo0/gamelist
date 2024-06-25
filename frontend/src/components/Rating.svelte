@@ -9,7 +9,7 @@
     // Props
     export let rating: number;
     export let max: number;
-    export let interactable: boolean = true;
+    export let interactable: boolean = false;
 
     // Events
     const dispatch = createEventDispatcher<{
@@ -28,12 +28,12 @@
 
 </script>
 
-<div class={twMerge("h-full flex flex-row", className)}>
+<div class={twMerge("flex flex-row", className)}>
 
     <!-- Highlighted stars -->
     {#each Array(rating) as _, i}
         <button disabled={!interactable} on:click={() => updateRating(i + 1)}>
-            <Icon width={24} class={twMerge("text-text", interactable && "text-yellow")} icon="material-symbols-light:star" />
+            <Icon width={24} class={twMerge("text-text", !interactable && "text-yellow")} icon="material-symbols-light:star" />
         </button>
     {/each}
 

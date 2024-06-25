@@ -10,6 +10,11 @@ export default {
         exo: ['Exo Variable', 'sans-serif'],
         lalezar: ['Lalezar', 'system-ui']
       },
+      colors: {
+        // allows catppuccin 'base' to be used in text
+        // since text-base is already defined
+        "cat-base": "#1e1e2e"
+      }
     },
   },
   plugins: [
