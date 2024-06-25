@@ -10,6 +10,7 @@ export type Game = {
     cover: string, // url
     list: number | null, // GameList[id] or backlog
     order: number,
+    completed: boolean,
 };
 
 export class GameAPI {
@@ -24,18 +25,20 @@ export class GameAPI {
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/e17233dc1c4e3457d5a259c06c7eb502.jpg",
             list: 0,
-            order: 0
+            order: 0,
+            completed: false,
         },
         {
             id: 1,
             name: "Yakuza Kiwami",
-            description: "Descr",
+            description: "Yakuza Kiwami is a remake of the 2005 open world action-adventure game Yakuza.",
             rating: 0,
             lastPlayed: null,
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/9daff58346c37a54d31d0219bd873f6a.jpg",
             list: 0,
-            order: 1
+            order: 1,
+            completed: false,
         }
     ];
 
@@ -84,5 +87,26 @@ export class GameAPI {
         return GameAPI.games
             .filter(game => game.list === list.id)
             .sort((a, b) => a.order - b.order);
+    }
+
+    static async updateRating(game: Game, rating: number) {
+        if (rating < 0 || rating > 5) {
+            return;
+        }
+
+        game.rating = rating;
+        await GameAPI.put(game);
+    }
+
+    static async complete(game: Game) {
+        game.list = null;
+        game.completed = true;
+        await GameAPI.put(game);
+    }
+
+    static async moveToBacklog(game: Game) {
+        game.list = null;
+        game.completed = false;
+        await GameAPI.put(game);
     }
 }

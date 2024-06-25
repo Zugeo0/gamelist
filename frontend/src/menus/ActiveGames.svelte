@@ -3,9 +3,20 @@
     import { GameListAPI, type GameList } from "../api/GameLists"; 
     import { GameAPI, type Game } from "../api/Games";
     import { formatDate } from "../util";
-    import { Link } from 'svelte-routing';
+    import { Link, navigate } from 'svelte-routing';
     import Icon from "@iconify/svelte";
     import Rating from "../components/Rating.svelte";
+    import { onMount } from "svelte";
+
+    let lists: GameList[] | null = null;
+
+    onMount(async () => {
+        lists = await fetchLists();
+    })
+
+    async function refreshList() {
+        lists = await fetchLists();
+    }
 
     async function fetchLists(): Promise<GameList[]> {
         return await GameListAPI.all();
@@ -14,12 +25,30 @@
     async function fetchFront(list: GameList): Promise<Game | null> {
         return await GameAPI.front(list)
     }
+
+    async function updateRating(game: Game, rating: number) {
+        await GameAPI.updateRating(game, rating);
+    }
+
+    async function completeGame(game: Game) {
+        await GameAPI.complete(game);
+        navigate('/completions');
+    }
+
+    async function moveGameToBacklog(game: Game) {
+        await GameAPI.moveToBacklog(game);
+        navigate('/backlog');
+    }
+
+    async function deleteGame(game: Game) {
+        // TODO: Make confirmation dialog
+        await GameAPI.remove(game.id);
+        await refreshList();
+    }
 </script>
 
 <div class="w-full h-full flex flex-col">
-    {#await fetchLists()}
-        <p>Loading...</p>
-    {:then lists} 
+    {#if lists} 
         {#each lists as list}
             {#await fetchFront(list)}
                 <p>Loading...</p>
@@ -48,26 +77,30 @@
                             <!-- Go to game lists button -->
                             <Link to="games" class="toolbar-btn flex-grow justify-start py-1 font-lalezar text-2xl">{list.name}</Link>
 
-                            <!-- Edit game button -->
-                            <button class="toolbar-btn opacity-0 group-hover:opacity-100">
-                                <Icon icon="material-symbols:edit" />
-                            </button>
+                            {#if game}
 
-                            <!-- Delete game button -->
-                            <button class="toolbar-btn opacity-0 group-hover:opacity-100">
-                                <Icon icon="lets-icons:remove-fill" />
-                            </button>
+                                <!-- Edit game button -->
+                                <button class="toolbar-btn opacity-0 group-hover:opacity-100">
+                                    <Icon icon="material-symbols:edit" />
+                                </button>
 
-                            <!-- Move game to backlog button -->
-                            <button class="toolbar-btn opacity-0 group-hover:opacity-100">
-                                <Icon icon="fa6-solid:dumpster" />
-                            </button>
+                                <!-- Delete game button -->
+                                <button on:click={() => deleteGame(game)} class="toolbar-btn opacity-0 group-hover:opacity-100">
+                                    <Icon icon="lets-icons:remove-fill" />
+                                </button>
 
-                            <!-- Complete game button -->
-                            <button class="toolbar-btn">
-                                <p>Complete</p>
-                                <Icon icon="fluent-mdl2:completed-solid" />
-                            </button>
+                                <!-- Move game to backlog button -->
+                                <button on:click={() => moveGameToBacklog(game)} class="toolbar-btn opacity-0 group-hover:opacity-100">
+                                    <Icon icon="fa6-solid:dumpster" />
+                                </button>
+
+                                <!-- Complete game button -->
+                                <button on:click={() => completeGame(game)} class="toolbar-btn">
+                                    <p>Complete</p>
+                                    <Icon icon="fluent-mdl2:completed-solid" />
+                                </button>
+
+                            {/if}
 
                         </div>
 
@@ -76,10 +109,10 @@
                             {#if game}
 
                                 <!-- Game info -->
-                                <div class="flex flex-col">
+                                <div class="flex flex-col flex-grow">
                                     <h1 class="font-lalezar text-white text-3xl uppercase">{ game.name }</h1>
 
-                                    <Rating rating={3} max={5} interactable />
+                                    <Rating rating={game.rating} max={5} on:update={e => updateRating(game, e.detail)} interactable />
 
                                     <p class="text-surface2 line-clamp-5">{ game.description }</p>
                                 </div>
@@ -123,5 +156,5 @@
                 
             {/await}
         {/each}
-    {/await}
+    {/if}
 </div>
