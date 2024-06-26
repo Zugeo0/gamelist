@@ -24,6 +24,11 @@
     async function fetchGames(list: GameList): Promise<Game[]> {
         return await GameAPI.fromList(list)
     }
+
+    async function removeList(id: number) {
+        await GameListAPI.remove(id);
+        await refreshLists();
+    }
 </script>
 
 <div class="w-full h-full flex flex-col">
@@ -62,7 +67,7 @@
                             </button>
 
                             <!-- Delete game button -->
-                            <button class="toolbar-btn opacity-0 group-hover:opacity-100">
+                            <button on:click={() => removeList(list.id)} class="toolbar-btn opacity-0 group-hover:opacity-100">
                                 <Icon icon="mdi:trash" />
                             </button>
 

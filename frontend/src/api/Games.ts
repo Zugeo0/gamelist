@@ -186,4 +186,10 @@ export class GameAPI {
         game.order = newOrder;
         await GameAPI.put(game);
     }
+
+    static async removeFromList(list: GameList) {
+        GameAPI.games
+            .filter(game => game.list == list.id)
+            .forEach(game => game.list = null);
+    }
 }

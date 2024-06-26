@@ -7,7 +7,7 @@
     import { showAddButtonStore } from "./GameListComponentState";
     import { twMerge } from "tailwind-merge";
     import { onMount, onDestroy, createEventDispatcher } from "svelte";
-    import type { GameList } from "../api/GameLists";
+    import { type GameList } from "../api/GameLists";
 
     const flipDurationMs = 50;
 

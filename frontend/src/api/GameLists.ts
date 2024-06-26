@@ -1,4 +1,6 @@
 
+import { GameAPI } from "./Games";
+
 export type GameList = {
     id: number,
     name: string,
@@ -43,7 +45,14 @@ export class GameListAPI {
     }
 
     static async remove(id: number) {
+        const list = GameListAPI.lists.find(list => list.id === id);
+
+        if (!list) {
+            return;
+        }
+
         GameListAPI.lists = GameListAPI.lists.filter(list => list.id !== id);
+        GameAPI.removeFromList(list);
     }
 }
 
