@@ -39,7 +39,79 @@ export class GameAPI {
             list: 0,
             order: 1,
             completed: false,
-        }
+        },
+        {
+            id: 2,
+            name: "Resident Evil 2",
+            description: "",
+            rating: 0,
+            lastPlayed: null,
+            playtime: 0,
+            cover: "https://cdn2.steamgriddb.com/thumb/fb5b3b5d234aa718062e3b4f6c826e23.jpg",
+            list: 0,
+            order: 0,
+            completed: false
+        },
+        {
+            id: 3,
+            name: "Alan Wake",
+            description: "",
+            rating: 0,
+            lastPlayed: null,
+            playtime: 0,
+            cover: "https://cdn2.steamgriddb.com/thumb/ef95b846b1e8469e32e7831643ca00ef.jpg",
+            list: 0,
+            order: 0,
+            completed: false
+        },
+        {
+            id: 4,
+            name: "Quantum Break",
+            description: "",
+            rating: 0,
+            lastPlayed: null,
+            playtime: 0,
+            cover: "https://cdn2.steamgriddb.com/thumb/583a9a3c0b349b7282d5db3aee07ac43.jpg",
+            list: 0,
+            order: 0,
+            completed: false
+        },
+        {
+            id: 5,
+            name: "Control",
+            description: "",
+            rating: 0,
+            lastPlayed: null,
+            playtime: 0,
+            cover: "https://cdn2.steamgriddb.com/thumb/f66a0c26ea3a640283a18af4915c577a.jpg",
+            list: 0,
+            order: 0,
+            completed: false
+        },
+        {
+            id: 6,
+            name: "Alan Wake 2",
+            description: "",
+            rating: 0,
+            lastPlayed: null,
+            playtime: 0,
+            cover: "https://cdn2.steamgriddb.com/thumb/a7147fd59ab64d16e49e819733ad2187.jpg",
+            list: 0,
+            order: 0,
+            completed: false
+        },
+        {
+            id: 7,
+            name: "Final Fantasy VII",
+            description: "",
+            rating: 0,
+            lastPlayed: null,
+            playtime: 0,
+            cover: "https://cdn2.steamgriddb.com/thumb/fb038c3ed829a992d6d4cc3ce6654290.jpg",
+            list: 0,
+            order: 0,
+            completed: false
+        },
     ];
 
     static async add(game: Game) {
@@ -107,6 +179,11 @@ export class GameAPI {
     static async moveToBacklog(game: Game) {
         game.list = null;
         game.completed = false;
+        await GameAPI.put(game);
+    }
+
+    static async setOrder(game: Game, newOrder: number) {
+        game.order = newOrder;
         await GameAPI.put(game);
     }
 }

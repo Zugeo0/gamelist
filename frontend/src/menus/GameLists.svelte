@@ -1,8 +1,21 @@
 
 <script lang="ts">
+    import { onMount } from "svelte";
     import { GameListAPI, type GameList } from "../api/GameLists"; 
     import { GameAPI, type Game } from "../api/Games";
-    import {  } from "@iconify/svelte";
+    import GameListComponent from "../components/GameListComponent.svelte";
+    import Icon from "@iconify/svelte";
+    import { Link } from "svelte-routing";
+
+    let lists: GameList[] | null = null;
+
+    onMount(async () => {
+        lists = await fetchLists();
+    })
+
+    async function refreshLists() {
+        lists = await fetchLists();
+    }
 
     async function fetchLists(): Promise<GameList[]> {
         return await GameListAPI.all();
@@ -14,9 +27,7 @@
 </script>
 
 <div class="w-full h-full flex flex-col">
-    {#await fetchLists()}
-        <p>Loading...</p>
-    {:then lists} 
+    {#if lists}
         {#each lists as list}
             {#await fetchGames(list)}
                 <p>Loading...</p>
@@ -27,7 +38,9 @@
 
                     <!-- Up Next Cover -->
                     {#if games[0]}
-                        <img class="game h-0 min-h-full" src={games[0].cover} alt="Game Cover">
+                        <Link class="game h-0 min-h-full" to="/">
+                            <img class="game" src={games[0].cover} alt="Game Cover">
+                        </Link>
                     {:else}
                         <div class="game h-0 min-h-full border border-base flex justify-center items-center text-base font-bold text-3xl">
                             EMPTY
@@ -40,20 +53,26 @@
                     <div class="flex flex-col gap-2 flex-grow">
 
                         <!-- Toolbar -->
-                        <div class="toolbar">
+                        <div class="toolbar group">
                             <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{list.name}</h1>
+
+                            <!-- Edit game button -->
+                            <button class="toolbar-btn opacity-0 group-hover:opacity-100">
+                                <Icon icon="material-symbols:edit" />
+                            </button>
+
+                            <!-- Delete game button -->
+                            <button class="toolbar-btn opacity-0 group-hover:opacity-100">
+                                <Icon icon="mdi:trash" />
+                            </button>
+
                         </div>
 
                         <!-- Games -->
-                        <div class="flex flex-row gap-2">
-                            {#each games as game}
-                                <img class="game h-48" src={game.cover} alt="Game Cover">
-                            {/each}
-
-                            <button class="game h-48 border-4 border-base text-surface1 flex justify-center items-center font-bold text-3xl hover:bg-base transition-colors">
-                                +
-                            </button>
-                        </div>
+                        <GameListComponent
+                            gameList={list}
+                            on:update={() => refreshLists()}
+                            />
 
                     </div>
 
@@ -61,5 +80,5 @@
                 
             {/await}
         {/each}
-    {/await}
+    {/if}
 </div>

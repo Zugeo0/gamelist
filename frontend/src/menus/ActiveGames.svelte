@@ -86,7 +86,7 @@
 
                                 <!-- Delete game button -->
                                 <button on:click={() => deleteGame(game)} class="toolbar-btn opacity-0 group-hover:opacity-100">
-                                    <Icon icon="lets-icons:remove-fill" />
+                                    <Icon icon="mdi:trash" />
                                 </button>
 
                                 <!-- Move game to backlog button -->
