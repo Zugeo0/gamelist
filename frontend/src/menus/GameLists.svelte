@@ -13,6 +13,10 @@
 
     let addGameModal: Modal;
     let addGameList: GameList;
+
+    let deleteConfirmModal: Modal;
+    let listToDelete: GameList;
+
     let backlogSearch: Game[] = [];
     let backlogSearchBar: HTMLInputElement;
 
@@ -104,7 +108,13 @@
                             </button>
 
                             <!-- Delete game list button -->
-                            <button on:click={() => removeList(list.id)} class="toolbar-btn opacity-0 group-hover:opacity-100">
+                            <button 
+                                on:click={() => {
+                                    listToDelete = list;
+                                    deleteConfirmModal.show();
+                                }} 
+                                class="toolbar-btn opacity-0 group-hover:opacity-100"
+                                >
                                 <Icon icon="mdi:trash" />
                             </button>
 
@@ -179,4 +189,29 @@
             }}
             >
     </div>
+</Modal>
+
+<Modal bind:this={deleteConfirmModal}>
+    {#if listToDelete}
+        <div class="flex flex-col gap-4 items-center">
+            <h1 class="text-lg font-lalezar text-white">Are you sure you want to delete {listToDelete.name}</h1>
+            <div class="flex gap-2">
+                <button 
+                    class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
+                    on:click={() => deleteConfirmModal.hide()}
+                    >
+                    NO
+                </button>
+                <button 
+                    class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
+                    on:click={() => {
+                        deleteConfirmModal.hide();
+                        removeList(listToDelete.id);
+                    }}
+                    >
+                    YES
+                </button>
+            </div>
+        </div>
+    {/if}
 </Modal>
