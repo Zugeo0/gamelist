@@ -7,7 +7,7 @@ export type GameList = {
 };
 
 export class GameListAPI {
-    static nextId: number = 0;
+    static nextId: number = 2;
     static lists: GameList[] = [
         {
             id: 0,

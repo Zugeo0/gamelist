@@ -17,6 +17,9 @@
     let deleteConfirmModal: Modal;
     let listToDelete: GameList;
 
+    let addGameListModal: Modal;
+    let addGameListName: HTMLInputElement;
+
     let backlogSearch: Game[] = [];
     let backlogSearchBar: HTMLInputElement;
 
@@ -45,6 +48,15 @@
         await GameAPI.moveToList(game, list);
     }
 
+    async function addList(name: string) {
+        await GameListAPI.add({
+            id: 0,
+            name: name,
+        })
+        await refreshLists();
+        console.log(lists);
+    }
+
     async function searchBacklog(search: string) {
         const backlog = await GameAPI.backlog()
         backlogSearch = backlog
@@ -57,12 +69,11 @@
                         return false;
                 }
                 return true;
-            })
-            .slice(0, 3);
+            });
     }
 </script>
 
-<div class="w-full h-full flex flex-col">
+<div class="w-full h-full flex flex-col overflow-y-scroll">
     {#if lists}
         {#each lists as list}
             {#await fetchGames(list)}
@@ -92,16 +103,6 @@
                         <div class="toolbar group">
                             <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{list.name}</h1>
 
-                            <!-- Add game button -->
-                            <button 
-                                class="toolbar-btn opacity-0 group-hover:opacity-100"
-                                on:click={() => {
-                                    addGameList = list;
-                                    addGameModal.show();
-                                }}>
-                                <Icon icon="material-symbols:add" />
-                            </button>
-
                             <!-- Edit game list button -->
                             <button class="toolbar-btn opacity-0 group-hover:opacity-100">
                                 <Icon icon="material-symbols:edit" />
@@ -118,6 +119,17 @@
                                 <Icon icon="mdi:trash" />
                             </button>
 
+                            <!-- Add game button -->
+                            <button 
+                                class="toolbar-btn"
+                                on:click={() => {
+                                    addGameList = list;
+                                    addGameModal.show();
+                                }}>
+                                <p>Add Game</p>
+                                <Icon icon="material-symbols:add" />
+                            </button>
+
                         </div>
 
                         <!-- Games -->
@@ -132,6 +144,16 @@
                 
             {/await}
         {/each}
+
+        <!-- Create game list button -->
+        <button 
+            class="mx-auto px-16 py-4 my-12 bg-base rounded-md hover:bg-surface0"
+            on:click={() => addGameListModal.show()}
+            >
+            <Icon icon="material-symbols:add">
+            </Icon>
+        </button>
+
     {/if}
 </div>
 
@@ -153,7 +175,7 @@
             on:input={(e) => searchBacklog(e.target.value)}
             >
 
-        <div class="flex flex-col">
+        <div class="flex flex-col overflow-y-scroll max-h-80">
             {#each backlogSearch as game}
                 <button 
                     class="flex gap-4 p-2 w-[500px] rounded-md hover:bg-base"
@@ -214,4 +236,29 @@
             </div>
         </div>
     {/if}
+</Modal>
+
+<Modal 
+    bind:this={addGameListModal} 
+    on:close={() => (addGameListName.value = '')}
+    >
+    <div class="flex gap-4 items-center w-[500px]">
+        <!-- TODO: Fix type error -->
+        <input
+            class="bg-base text-text px-4 py-2 rounded-md placeholder:text-surface0 w-[500px] outline-none focus:outline-mauve"
+            type="text"
+            bind:this={addGameListName}
+            placeholder="Game list name"
+            >
+
+        <button 
+            class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
+            on:click={() => {
+                addGameListModal.hide();
+                addList(addGameListName.value);
+            }}
+            >
+            CREATE
+        </button>
+    </div>
 </Modal>
