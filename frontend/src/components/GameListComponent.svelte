@@ -20,6 +20,7 @@
 
     const dispatch = createEventDispatcher<{
         update: null;
+        add: null;
     }>();
 
     onMount(async () => {
@@ -46,6 +47,10 @@
         dispatch('update');
     }
 
+    async function handleAdd() {
+        dispatch('add');
+    }
+
     function disableEvent(e: Event) {
         e.stopImmediatePropagation();
     }
@@ -70,6 +75,7 @@
         <button 
             on:mousedown={disableEvent}
             on:touchstart={disableEvent}
+            on:click={handleAdd}
             class="game h-48 border-4 border-base text-surface1 flex justify-center items-center font-bold text-3xl hover:bg-base transition-colors"
             >
             +

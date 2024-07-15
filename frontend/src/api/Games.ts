@@ -49,7 +49,7 @@ export class GameAPI {
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/fb5b3b5d234aa718062e3b4f6c826e23.jpg",
             list: 0,
-            order: 0,
+            order: 2,
             completed: false
         },
         {
@@ -61,7 +61,7 @@ export class GameAPI {
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/ef95b846b1e8469e32e7831643ca00ef.jpg",
             list: 0,
-            order: 0,
+            order: 3,
             completed: false
         },
         {
@@ -73,7 +73,7 @@ export class GameAPI {
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/583a9a3c0b349b7282d5db3aee07ac43.jpg",
             list: 0,
-            order: 0,
+            order: 4,
             completed: false
         },
         {
@@ -85,7 +85,7 @@ export class GameAPI {
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/f66a0c26ea3a640283a18af4915c577a.jpg",
             list: 0,
-            order: 0,
+            order: 5,
             completed: false
         },
         {
@@ -97,7 +97,7 @@ export class GameAPI {
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/a7147fd59ab64d16e49e819733ad2187.jpg",
             list: 0,
-            order: 0,
+            order: 6,
             completed: false
         },
         {
@@ -109,7 +109,7 @@ export class GameAPI {
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/fb038c3ed829a992d6d4cc3ce6654290.jpg",
             list: 0,
-            order: 0,
+            order: 7,
             completed: false
         },
     ];
@@ -145,6 +145,10 @@ export class GameAPI {
         return [...GameAPI.games.map(game => { return {...game} })];
     }
 
+    static async backlog(): Promise<Game[]> {
+        return [...GameAPI.games.filter(game => game.list === null && game.completed === false).map(game => { return {...game} })];
+    }
+
     static async put(game: Game) {
         let newGame = {...game};
         GameAPI.games = GameAPI.games.filter(g => g.id !== game.id);
@@ -173,6 +177,12 @@ export class GameAPI {
     static async complete(game: Game) {
         game.list = null;
         game.completed = true;
+        await GameAPI.put(game);
+    }
+
+    static async moveToList(game: Game, list: GameList) {
+        game.list = list.id;
+        game.completed = false;
         await GameAPI.put(game);
     }
 

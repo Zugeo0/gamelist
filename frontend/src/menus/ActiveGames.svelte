@@ -37,7 +37,7 @@
 
     async function moveGameToBacklog(game: Game) {
         await GameAPI.moveToBacklog(game);
-        navigate('/backlog');
+        await refreshList();
     }
 
     async function deleteGame(game: Game) {
