@@ -11,7 +11,7 @@
     }
 
     .toolbar {
-        @apply w-full bg-base rounded-md h-10 flex flex-row items-stretch
+        @apply w-full bg-base rounded-md h-10 flex flex-row items-stretch overflow-hidden
     }
 
     .toolbar-element {
