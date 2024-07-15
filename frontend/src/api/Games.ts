@@ -10,7 +10,7 @@ export type Game = {
     cover: string, // url
     list: number | null, // GameList[id] or backlog
     order: number,
-    completed: boolean,
+    completed: Date | null,
 };
 
 export class GameAPI {
@@ -26,7 +26,7 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/e17233dc1c4e3457d5a259c06c7eb502.jpg",
             list: 0,
             order: 0,
-            completed: false,
+            completed: null,
         },
         {
             id: 1,
@@ -38,7 +38,7 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/9daff58346c37a54d31d0219bd873f6a.jpg",
             list: 0,
             order: 1,
-            completed: false,
+            completed: null,
         },
         {
             id: 2,
@@ -50,7 +50,7 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/fb5b3b5d234aa718062e3b4f6c826e23.jpg",
             list: 0,
             order: 2,
-            completed: false
+            completed: null
         },
         {
             id: 3,
@@ -62,7 +62,7 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/ef95b846b1e8469e32e7831643ca00ef.jpg",
             list: 0,
             order: 3,
-            completed: false
+            completed: null
         },
         {
             id: 4,
@@ -74,7 +74,7 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/583a9a3c0b349b7282d5db3aee07ac43.jpg",
             list: 0,
             order: 4,
-            completed: false
+            completed: null
         },
         {
             id: 5,
@@ -86,7 +86,7 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/f66a0c26ea3a640283a18af4915c577a.jpg",
             list: 0,
             order: 5,
-            completed: false
+            completed: null
         },
         {
             id: 6,
@@ -98,7 +98,7 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/a7147fd59ab64d16e49e819733ad2187.jpg",
             list: 0,
             order: 6,
-            completed: false
+            completed: null
         },
         {
             id: 7,
@@ -110,7 +110,7 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/fb038c3ed829a992d6d4cc3ce6654290.jpg",
             list: 0,
             order: 7,
-            completed: false
+            completed: null
         },
     ];
 
@@ -146,7 +146,15 @@ export class GameAPI {
     }
 
     static async backlog(): Promise<Game[]> {
-        return [...GameAPI.games.filter(game => game.list === null && game.completed === false).map(game => { return {...game} })];
+        return [...GameAPI.games.filter(game => game.list === null && !game.completed).map(game => { return {...game} })];
+    }
+
+    static async completed(): Promise<Game[]> {
+        return [...GameAPI.games
+            .filter(game => game.completed)
+            .sort((a, b) => a.completed!.getTime() - b.completed!.getTime())
+            .toReversed()
+            .map(game => { return {...game} })];
     }
 
     static async put(game: Game) {
@@ -176,19 +184,19 @@ export class GameAPI {
 
     static async complete(game: Game) {
         game.list = null;
-        game.completed = true;
+        game.completed = new Date();
         await GameAPI.put(game);
     }
 
     static async moveToList(game: Game, list: GameList) {
         game.list = list.id;
-        game.completed = false;
+        game.completed = null;
         await GameAPI.put(game);
     }
 
     static async moveToBacklog(game: Game) {
         game.list = null;
-        game.completed = false;
+        game.completed = null;
         await GameAPI.put(game);
     }
 
