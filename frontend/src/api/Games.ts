@@ -43,7 +43,7 @@ export class GameAPI {
         {
             id: 2,
             name: "Resident Evil 2",
-            description: "",
+            description: "Resident Evil 2 is a remake of 1998's Resident Evil 2. The game was not developed with the intent of improving the original, but rather a reimagining of the original story with redesigned maps, characters and story elements. Gameplay mechanics are more similar to Resident Evil 7: Biohazard though with the use of an over-the-shoulder camera.",
             rating: 0,
             lastPlayed: null,
             playtime: 0,
@@ -55,7 +55,7 @@ export class GameAPI {
         {
             id: 3,
             name: "Alan Wake",
-            description: "",
+            description: "Alan Wake is a psychological horror action-adventure game developed by Remedy Entertainment. The narrative centres on Alan Wake, a bestselling thriller novelist experiencing writer's block. He travels to the small town of Bright Falls with his wife, Alice, seeking a change of environment. Shortly after their arrival, Alice vanishes under mysterious circumstances. As Alan searches for her, he discovers pages of a thriller novel he does not recall writing. The events described in these pages begin to manifest in reality, and Alan encounters hostile supernatural entities known as the \"Taken,\" who are controlled by darkness. The gameplay involves navigating Bright Falls and using light to combat these dark forces. The storyline explores themes of reality and fiction, along with the influence of the written word.",
             rating: 0,
             lastPlayed: null,
             playtime: 0,
@@ -67,7 +67,7 @@ export class GameAPI {
         {
             id: 4,
             name: "Quantum Break",
-            description: "",
+            description: "When time breaks, catastrophe becomes your playground. As hero Jack Joyce, you'll fight your way through epic disasters that stutter back and forth in time. But surviving this unstable world--and halting the end of time itself--is only possible by mastering your new time powers.",
             rating: 0,
             lastPlayed: null,
             playtime: 0,
@@ -79,7 +79,7 @@ export class GameAPI {
         {
             id: 5,
             name: "Control",
-            description: "",
+            description: "Control is a supernatural 3rd person action-adventure will challenge you to master the combination of supernatural abilities, modifiable loadouts and reactive environments while fighting through a deep and unpredictable world.",
             rating: 0,
             lastPlayed: null,
             playtime: 0,
@@ -91,7 +91,7 @@ export class GameAPI {
         {
             id: 6,
             name: "Alan Wake 2",
-            description: "",
+            description: "Saga Anderson arrives to investigate ritualistic murders in a small town. Alan Wake pens a dark story to shape the reality around him. These two heroes are somehow connected. Can they become the heroes they need to be?",
             rating: 0,
             lastPlayed: null,
             playtime: 0,
@@ -103,7 +103,7 @@ export class GameAPI {
         {
             id: 7,
             name: "Final Fantasy VII",
-            description: "",
+            description: "Final Fantasy VII is the seventh main installment in the Final Fantasy series, and was the first title to feature three-dimensional graphics, pre-rendered backgrounds and numerous full motion videos. The gameplay is a departure from previous entries in the series in many ways. Though it retains the Active Time Battle pseudo-turn based menu command system, FFVII features three party members rather than four. The Materia system allows the player to customize each party member's abilities to their liking, and the Limit system grants them unique combat skills. Though minigames had been a recurring feature, FFVII introduces numerous new ones, many of them playable in the theme park Gold Saucer varying from racing with Chocobos to snowboarding.",
             rating: 0,
             lastPlayed: null,
             playtime: 0,
