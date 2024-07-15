@@ -88,12 +88,22 @@
                         <div class="toolbar group">
                             <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{list.name}</h1>
 
-                            <!-- Edit game button -->
+                            <!-- Add game button -->
+                            <button 
+                                class="toolbar-btn opacity-0 group-hover:opacity-100"
+                                on:click={() => {
+                                    addGameList = list;
+                                    addGameModal.show();
+                                }}>
+                                <Icon icon="material-symbols:add" />
+                            </button>
+
+                            <!-- Edit game list button -->
                             <button class="toolbar-btn opacity-0 group-hover:opacity-100">
                                 <Icon icon="material-symbols:edit" />
                             </button>
 
-                            <!-- Delete game button -->
+                            <!-- Delete game list button -->
                             <button on:click={() => removeList(list.id)} class="toolbar-btn opacity-0 group-hover:opacity-100">
                                 <Icon icon="mdi:trash" />
                             </button>
@@ -104,10 +114,6 @@
                         <GameListComponent
                             gameList={list}
                             on:update={() => refreshLists()}
-                            on:add={() => {
-                                addGameList = list;
-                                addGameModal.show();
-                            }}
                             />
 
                     </div>
