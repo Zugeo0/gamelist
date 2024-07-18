@@ -191,12 +191,14 @@ export class GameAPI {
     static async moveToList(game: Game, list: GameList) {
         game.list = list.id;
         game.completed = null;
+        game.order = GameAPI.games.filter(g => g.list === list.id).length;
         await GameAPI.put(game);
     }
 
     static async moveToBacklog(game: Game) {
         game.list = null;
         game.completed = null;
+        game.order = 0;
         await GameAPI.put(game);
     }
 
