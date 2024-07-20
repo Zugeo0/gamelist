@@ -42,6 +42,7 @@ export class GameListAPI {
         let newList = {...list};
         GameListAPI.lists = GameListAPI.lists.filter(l => l.id !== list.id);
         GameListAPI.lists.push(newList);
+        GameListAPI.lists.sort((a, b) => a.id - b.id);
     }
 
     static async remove(id: number) {

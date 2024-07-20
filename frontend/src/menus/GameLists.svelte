@@ -20,6 +20,10 @@
     let addGameListModal: Modal;
     let addGameListName: HTMLInputElement;
 
+    let editGameListModal: Modal;
+    let editGameListName: HTMLInputElement;
+    let listToEdit: GameList;
+
     let backlogSearch: Game[] = [];
     let backlogSearchBar: HTMLInputElement;
 
@@ -54,7 +58,12 @@
             name: name,
         })
         await refreshLists();
-        console.log(lists);
+    }
+
+    async function editName(list: GameList, name: string) {
+        list.name = name;
+        await GameListAPI.put(list);
+        await refreshLists();
     }
 
     async function searchBacklog(search: string) {
@@ -104,7 +113,13 @@
                             <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{list.name}</h1>
 
                             <!-- Edit game list button -->
-                            <button class="toolbar-btn opacity-0 group-hover:opacity-100">
+                            <button 
+                                on:click={() => {
+                                    listToEdit = list;
+                                    editGameListModal.show();
+                                }}
+                                class="toolbar-btn opacity-0 group-hover:opacity-100"
+                                >
                                 <Icon icon="material-symbols:edit" />
                             </button>
 
@@ -259,6 +274,31 @@
             }}
             >
             CREATE
+        </button>
+    </div>
+</Modal>
+
+<Modal 
+    bind:this={editGameListModal} 
+    on:close={() => (editGameListName.value = '')}
+    >
+    <div class="flex gap-4 items-center w-[500px]">
+        <!-- TODO: Fix type error -->
+        <input
+            class="bg-base text-text px-4 py-2 rounded-md placeholder:text-surface0 w-[500px] outline-none focus:outline-mauve"
+            type="text"
+            bind:this={editGameListName}
+            placeholder="Game list name"
+            >
+
+        <button 
+            class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
+            on:click={() => {
+                editGameListModal.hide();
+                editName(listToEdit, editGameListName.value);
+            }}
+            >
+            UPDATE
         </button>
     </div>
 </Modal>
