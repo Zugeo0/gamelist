@@ -44,12 +44,6 @@
         await GameAPI.moveToBacklog(game);
         await refreshList();
     }
-
-    async function deleteGame(game: Game) {
-        // TODO: Make confirmation dialog
-        await GameAPI.remove(game.id);
-        await refreshList();
-    }
 </script>
 
 <div class="w-full h-full flex flex-col">
