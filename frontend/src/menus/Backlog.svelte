@@ -3,9 +3,13 @@
     import { onMount } from "svelte";
     import { GameAPI, type Game } from "../api/Games";
     import Icon from "@iconify/svelte";
+    import Modal from "../components/Modal.svelte";
+    import ConfirmationModal from "../components/ConfirmationModal.svelte";
 
     let games: Game[];
     let selectedGame: Game | null = null;
+
+    let deleteGameModal: Modal;
 
     onMount(async () => {
         await refreshGames();
@@ -55,7 +59,10 @@
             </button>
 
             <!-- Delete game list button -->
-            <button class="toolbar-btn">
+            <button 
+                on:click={() => deleteGameModal.show()}
+                class="toolbar-btn"
+                >
                 <Icon icon="mdi:trash" />
             </button>
 
@@ -63,3 +70,21 @@
     {/if}
 
 </div>
+
+<Modal bind:this={deleteGameModal}>
+    {#if selectedGame}
+        <ConfirmationModal 
+            message="Are you sure you want to delete {selectedGame.name}"
+            on:cancel={() => deleteGameModal.hide()}
+            on:confirm={async () => {
+                if (!selectedGame) {
+                    return;
+                }
+
+                deleteGameModal.hide();
+                await GameAPI.remove(selectedGame.id);
+                await refreshGames();
+            }}
+            />
+    {/if}
+</Modal>

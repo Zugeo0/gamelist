@@ -8,6 +8,7 @@
     import Rating from "../components/Rating.svelte";
     import { onMount } from "svelte";
     import Modal from "../components/Modal.svelte";
+    import ConfirmationModal from "../components/ConfirmationModal.svelte";
 
     let lists: GameList[] | null = null;
 
@@ -171,25 +172,14 @@
 
 <Modal bind:this={deleteConfirmModal}>
     {#if gameToDelete}
-        <div class="flex flex-col gap-4 items-center">
-            <h1 class="text-lg font-lalezar text-white">Are you sure you want to delete {gameToDelete.name}</h1>
-            <div class="flex gap-2">
-                <button 
-                    class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
-                    on:click={() => deleteConfirmModal.hide()}
-                    >
-                    NO
-                </button>
-                <button 
-                    class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
-                    on:click={() => {
-                        deleteConfirmModal.hide();
-                        deleteGame(gameToDelete);
-                    }}
-                    >
-                    YES
-                </button>
-            </div>
-        </div>
+        <ConfirmationModal 
+            on:cancel={() => deleteConfirmModal.hide()}
+            on:confirm={async () => {
+                deleteConfirmModal.hide();
+                await GameAPI.remove(gameToDelete.id);
+                await refreshList();
+            }}
+            message="Are you sure you want to delete {gameToDelete.name}"
+            />
     {/if}
 </Modal>
