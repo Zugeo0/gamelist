@@ -252,7 +252,7 @@ export class GameAPI {
 
     static async searchIGDB(search: string): Promise<IGDBGame[]> {
         return GameAPI.igdbMock
-            .filter(game => game.name.includes(search))
+            .filter(game => game.name.toLowerCase().includes(search.toLowerCase()))
             .filter(game => !GameAPI.games.find(found => found.igdbId === game.id))
     }
 
