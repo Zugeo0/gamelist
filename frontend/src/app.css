@@ -4,3 +4,26 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .game {
+        @apply aspect-[2/3] size-auto shadow-md rounded-md
+    }
+
+    .toolbar {
+        @apply w-full bg-base rounded-md h-10 flex flex-row items-stretch overflow-hidden
+    }
+
+    .toolbar-element {
+        @apply px-4 h-full uppercase font-bold
+            flex gap-2 items-center justify-center
+    }
+
+    .toolbar-btn {
+        @apply toolbar-element hover:bg-surface0
+    }
+
+    .minimal-input {
+        @apply bg-transparent border-b-2 border-surface0 placeholder:text-surface0 focus:border-green text-text text-xl p-1 outline-none
+    }
+}

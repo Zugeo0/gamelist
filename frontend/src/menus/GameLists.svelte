@@ -1,274 +1,416 @@
 
 <script lang="ts">
-    import Icon from "@iconify/svelte";
-    import Dropdown from "../components/Dropdown.svelte";
-    import GameInfo from "../components/GameInfo.svelte";
-    import EditGame from "../components/EditGame.svelte";
-    import { getGameLists, deleteGame, type GameData, type GameList, getUncompletedGamesInList, createGame, moveGameToList, updateGame, moveGameToBacklog, setGameCompleted, updateGameOrder } from "../api";
-    import { dndzone, type DndEvent } from "svelte-dnd-action";
     import { onMount } from "svelte";
+    import { GameListAPI, type GameList } from "../api/GameLists"; 
+    import { GameAPI, type Game, type IGDBGame } from "../api/Games";
+    import GameListComponent from "../components/GameListComponent.svelte";
+    import Icon from "@iconify/svelte";
+    import { Link } from "svelte-routing";
+    import Modal from "../components/Modal.svelte";
+    import Rating from "../components/Rating.svelte";
+    import EditGameModal from "../components/EditGameModal.svelte";
+    import ConfirmationModal from "../components/ConfirmationModal.svelte";
 
-    let activeList: GameList | null = null;
+    let lists: GameList[] | null = null;
 
-    let gamelists: GameList[];
-    let games: GameData[];
+    let addGameModal: Modal;
+    let addGameList: GameList;
 
-    let activeGame: GameData | null = null;
-    let newGame: GameData | null = null;
-    let editGame: GameData | null = null;
+    let deleteListConfirmModal: Modal;
+    let listToDelete: GameList;
+
+    let deleteGameConfirmModal: Modal;
+
+    let addGameListModal: Modal;
+    let addGameListName: HTMLInputElement;
+
+    let editGameListModal: Modal;
+    let editGameListName: HTMLInputElement;
+    let listToEdit: GameList;
+
+    let editGameModal: Modal;
+    let gameToEdit: Game | null = null;
+
+    let backlogSearch: Game[] = [];
+    let igdbSearch: IGDBGame[] = [];
+    let backlogSearchBar: HTMLInputElement;
+    let igdbSearchBar: HTMLInputElement;
+
+    let selectedGame: Game | null = null;
 
     onMount(async () => {
-        await updateGameLists();
-        activeList = gamelists[0];
-        games = await getUncompletedGamesInList(activeList.id);
-    });
+        await refreshLists();
+    })
 
-    async function updateGameLists() {
-        gamelists = await getGameLists();
-
-        if (gamelists.length == 0) {
-            games = [];
-            return;
-        }
+    async function refreshLists() {
+        lists = await GameListAPI.all();
     }
 
-    function createNewGame() {
-        newGame = {
+    async function fetchGames(list: GameList): Promise<Game[]> {
+        return await GameAPI.fromList(list)
+    }
+
+    async function removeList(id: number) {
+        await GameListAPI.remove(id);
+        await refreshLists();
+    }
+
+    async function moveToList(game: Game, list: GameList) {
+        await GameAPI.moveToList(game, list);
+    }
+
+    async function addList(name: string) {
+        await GameListAPI.add({
             id: 0,
-            name: "",
-            description: "",
-            genres: [],
-            artwork_url: "",
-            release_date: null,
-            igdb_id: null,
-            steam_id: null,
-            metacritic_score: null,
-            state: null,
-        }
+            name: name,
+        })
+        await refreshLists();
     }
 
-    async function acceptCreateGame(event: CustomEvent<GameData>) {
-        newGame = null;
-        let gameData = event.detail;
-
-        if (activeList == null) {
-            console.error("Active list is null");
-            return;
-        }
-
-        try {
-            let newGame = await createGame(gameData);
-            await moveGameToList(newGame.id, activeList.id);
-
-            games = [...games, newGame];
-        } catch (e) {
-            console.log(e);
-        }
+    async function editName(list: GameList, name: string) {
+        list.name = name;
+        await GameListAPI.put(list);
+        await refreshLists();
     }
 
-    async function acceptEditGame(event: CustomEvent<GameData>) {
-        editGame = null;
-        let gameData = event.detail;
-
-        try {
-            let gameInList = games.find(game => game.id == gameData.id)!;
-            let gameIndex = games.indexOf(gameInList);
-
-            // the id should always be correct so this should never return null
-            games[gameIndex] = await updateGame(gameData) as GameData;
-            activeGame = games[gameIndex];
-        } catch (e) {
-            console.log(e);
-        }
-    }
-
-    async function changeGameList(event: CustomEvent<number>) {
-        await updateGameLists();
-        activeList = gamelists.filter(list => list.id == event.detail)[0];
-        games = await getUncompletedGamesInList(activeList.id);
-    }
-
-    async function moveActiveGameToBacklog() {
-        if (!activeGame) {
-            return;
-        }
-
-        moveGameToBacklog(activeGame.id);
-        games = await getUncompletedGamesInList(activeList!.id);
-        activeGame = null;
-    }
-
-    async function deleteActiveGame() {
-        if (!activeGame) {
-            return;
-        }
-
-        if (!confirm(`Are you sure you want to delete ${activeGame.name}?`)) {
-            return;
-        }
-
-        deleteGame(activeGame!.id);
-        games = await getUncompletedGamesInList(activeList!.id);
-        activeGame = null;
-    }
-
-    async function completeActiveGame() {
-        if (!activeGame) {
-            return;
-        }
-
-        setGameCompleted(activeGame.id, true);
-        games = await getUncompletedGamesInList(activeList!.id);
-        activeGame = games[0] ?? null;
-    }
-
-    function handleConsider(e: CustomEvent<DndEvent<GameData>>) {
-        games = e.detail.items;
-    }
-
-    async function handleFinalize(e: CustomEvent<DndEvent<GameData>>) {
-        games = e.detail.items;
-        let order = 0;
-        for (let game of games) {
-            if (!game.state) {
-                continue;
-            }
-            game = await updateGameOrder(game.id, order++) as GameData;
-        }
-    }
-
-    function formatDate(date: Date): string {
-        let month = '';
-        switch (date.getMonth()) {
-            case 0:  month = 'Jan'; break;
-            case 1:  month = 'Feb'; break;
-            case 2:  month = 'Mar'; break;
-            case 3:  month = 'Apr'; break;
-            case 4:  month = 'May'; break;
-            case 5:  month = 'Jun'; break;
-            case 6:  month = 'Jul'; break;
-            case 7:  month = 'Aug'; break;
-            case 8:  month = 'Sep'; break;
-            case 9:  month = 'Oct'; break;
-            case 10: month = 'Nov'; break;
-            case 11: month = 'Dec'; break;
-        }
-        return `${date.getDay()}. ${month} ${date.getFullYear()}`
+    async function searchBacklog(search: string) {
+        const backlog = await GameAPI.backlog()
+        backlogSearch = backlog
+            .filter(game => {
+                // TODO: Sort based on relevancy
+                const gameName = game.name.toLowerCase();
+                const searchParams = search.toLowerCase().split(' ');
+                for (let i = 0; i < searchParams.length; i++) {
+                    if (!gameName.includes(searchParams[i]))
+                        return false;
+                }
+                return true;
+            });
     }
 </script>
 
-{#if gamelists && games}
-    <div class="w-full h-full flex flex-row">
-        <div class="h-full min-w-96 bg-mantle border-r border-r-overlay0 flex flex-col">
+<div class="w-full h-full relative">
+    <div class="w-full h-full flex flex-col overflow-y-scroll">
+        {#if lists}
+            {#each lists as list}
+                {#await fetchGames(list)}
+                    <p>Loading...</p>
+                {:then games} 
 
-            <!-- Control Bar -->
-            <div class="w-full h-8 bg-mantle border-b border-b-black">
-                <Dropdown on:select={changeGameList} bg="bg-mantle" {gamelists} />
-            </div>
+                    <!-- Game List -->
+                    <div class="w-full p-3 flex flex-row gap-2 border-b border-base items-stretch h-fit">
 
-            <!-- Current Game Label -->
-            {#if games.length > 0}
-                <div class="w-full h-6 bg-green text-black text-center font-bold flex flex-row justify-around border-y border-black select-none">
-                    <p>v v v</p> <p>PLAYING</p> <p>v v v</p>
-                </div>
-            {/if}
-
-            <section use:dndzone={{items: games}} on:consider={handleConsider} on:finalize={handleFinalize}>
-                {#each games as game (game.id)}
-
-                    <GameInfo
-                        on:click={() => activeGame === game ? activeGame = null : activeGame = game}
-                        selected={game === activeGame} {game}
-                    />
-
-                {/each}
-            </section>
-
-            {#if activeList}
-                <div class="w-full h-14 flex justify-center items-center">
-                    <button on:click={createNewGame} class="bg-base rounded-lg p-1 w-24 font-bold hover:bg-surface0">
-                        +
-                    </button>
-                </div>
-            {/if}
-
-        </div>
-
-        <!-- Game Controls -->
-        <div class="h-full flex-grow bg-mantle flex flex-col justify-between">
-            {#if activeGame}
-
-                <!-- Artwork -->
-                <div class="w-full h-1/2 bg-crust border-l border-l-base flex justify-center items-center overflow-hidden">
-                    {#if activeGame.artwork_url}
-                        <img class="select-none h-full w-full object-cover" src={activeGame.artwork_url} alt="Artwork">
-                    {/if}
-                </div>
-
-                <!-- Control Bar -->
-                <div class="h-8 bg-crust flex flex-row gap-2 items-center border-y border-black">
-
-                    <!-- Left Side -->
-                    <div class="h-full w-full flex flex-row gap-2 items-center">
-
-                        <!-- Last Played Display -->
-                        <p class="select-none mx-2">Last Played</p>
-                        <p class="select-none text-mauve font-bold mr-6">{activeGame.state?.last_played ? formatDate(activeGame.state?.last_played) : "Never"}</p>
-
-                        <!-- Playtime Display -->
-                        {#if activeGame.state && activeGame.state.gametime_min > 0}
-                            <Icon width={20} height={20} icon="mingcute:time-fill" />
-                            <p class="select-none">{activeGame.state.gametime_min < 60 ? `${activeGame.state.gametime_min} minutes` : `${Math.round(activeGame.state.gametime_min / 6) / 10} hours`}</p>
+                        <!-- Up Next Cover -->
+                        {#if games[0]}
+                            <Link class="game h-0 min-h-full" to="/">
+                                <img class="game h-0 min-h-full" src={games[0].cover} alt="Game Cover">
+                            </Link>
+                        {:else}
+                            <div class="game h-0 min-h-full border border-base flex justify-center items-center text-base font-bold text-3xl">
+                                EMPTY
+                            </div>
                         {/if}
 
+                        <div class="min-w-px h-full bg-base"></div>
+
+                        <!-- List Details -->
+                        <div class="flex flex-col gap-2 flex-grow">
+
+                            <!-- Toolbar -->
+                            <div class="toolbar group">
+                                <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{list.name}</h1>
+
+                                <!-- Edit game list button -->
+                                <button 
+                                    on:click={() => {
+                                        listToEdit = list;
+                                        editGameListModal.show();
+                                    }}
+                                    class="toolbar-btn opacity-0 group-hover:opacity-100"
+                                    >
+                                    <Icon icon="material-symbols:edit" />
+                                </button>
+
+                                <!-- Delete game list button -->
+                                <button 
+                                    on:click={() => {
+                                        listToDelete = list;
+                                        deleteListConfirmModal.show();
+                                    }} 
+                                    class="toolbar-btn opacity-0 group-hover:opacity-100"
+                                    >
+                                    <Icon icon="mdi:trash" />
+                                </button>
+
+                                <!-- Add game button -->
+                                <button 
+                                    class="toolbar-btn"
+                                    on:click={() => {
+                                        addGameList = list;
+                                        addGameModal.show();
+                                    }}>
+                                    <p>Add Game</p>
+                                    <Icon icon="material-symbols:add" />
+                                </button>
+
+                            </div>
+
+                            <!-- Games -->
+                            <GameListComponent
+                                bind:selectedGame={selectedGame}
+                                gameList={list}
+                                on:update={() => refreshLists()}
+                                />
+
+                        </div>
+
                     </div>
+                    
+                {/await}
+            {/each}
 
-                    <!-- Right Side -->
-                    <div class="h-full flex flex-row-reverse gap-2 items-center">
+            <!-- Create game list button -->
+            <button 
+                class="mx-auto px-16 py-4 mt-12 mb-24 bg-base rounded-md hover:bg-surface0"
+                on:click={() => addGameListModal.show()}
+                >
+                <Icon icon="material-symbols:add">
+                </Icon>
+            </button>
 
-                        <!-- Complete Game Button -->
-                        <button on:click={completeActiveGame} class="mr-2 px-2 h-6 bg-mantle rounded-md border border-green text-green font-bold flex flex-row items-center gap-2 hover:bg-green hover:text-black">
-                            <Icon width={16} icon="fluent-mdl2:completed-solid" />
-                        </button>
-
-                        <!-- Delete Game Button -->
-                        <button on:click={deleteActiveGame} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-red hover:border-red hover:text-black">
-                            <Icon width={20} icon="lets-icons:remove-fill" />
-                        </button>
-
-                        <!-- Move To Backlog Button -->
-                        <button on:click={moveActiveGameToBacklog} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-peach hover:border-peach hover:text-black">
-                            <Icon width={16} icon="fa6-solid:dumpster" />
-                        </button>
-
-                        <!-- Edit Button -->
-                        <button on:click={() => editGame = activeGame} class="px-2 h-6 bg-mantle rounded-md border border-base font-bold flex flex-row items-center gap-2 hover:bg-blue hover:border-blue hover:text-black">
-                            Edit
-                            <Icon width={16} icon="material-symbols:edit" />
-                        </button>
-
-                    </div>
-                </div>
-
-                <!-- Game Info -->
-                <div class="w-full px-4 py-8 flex-grow">
-                    <h1 class="text-5xl font-lalezar text-white mb-4">
-                        {activeGame.name}
-                    </h1>
-
-                    <p>
-                        {activeGame.description || "No description"}
-                    </p>
-                </div>
-            {/if}
-        </div>
-
-        {#if newGame}
-            <EditGame on:close={() => newGame = null} on:accept={acceptCreateGame} game={newGame} />
-        {/if}
-
-        {#if editGame}
-            <EditGame on:close={() => editGame = null} on:accept={acceptEditGame} game={editGame} />
         {/if}
     </div>
-{/if}
+
+    {#if selectedGame}
+        <div class="absolute left-0 right-0 bottom-0 p-4">
+            <div class="toolbar">
+                <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{selectedGame.name}</h1>
+
+                <!-- Move game to game list button -->
+                <button 
+                    on:click={async () => {
+                        if (selectedGame) {
+                            GameAPI.moveToBacklog(selectedGame);
+                            await refreshLists();
+                            selectedGame = null;
+                        }
+                    }}
+                    class="toolbar-btn"
+                    >
+                    <p>Move to backlog</p>
+                    <Icon icon="fa6-solid:dumpster" />
+                </button>
+
+                <!-- Edit game list button -->
+                <button 
+                    on:click={() => {
+                        gameToEdit = selectedGame;
+                        editGameModal.show();
+                    }}
+                    class="toolbar-btn"
+                    >
+                    <Icon icon="material-symbols:edit" />
+                </button>
+
+                <!-- Delete game list button -->
+                <button 
+                    on:click={() => deleteGameConfirmModal.show()}
+                    class="toolbar-btn"
+                    >
+                    <Icon icon="mdi:trash" />
+                </button>
+
+            </div>
+        </div>
+    {/if}
+
+</div>
+
+<Modal 
+    bind:this={addGameModal} 
+    on:close={() => {
+        backlogSearch = [];
+        backlogSearchBar.value = '';
+    }}
+    >
+    <div class="flex flex-col gap-2">
+        <!-- TODO: Fix type error -->
+        <input
+            class="bg-base text-text px-4 py-2 rounded-md placeholder:text-surface0 w-[500px] outline-none focus:outline-mauve"
+            type="text"
+            placeholder="Search backlog"
+            bind:this={backlogSearchBar}
+            on:focus={() => {
+                searchBacklog('');
+                igdbSearch = [];
+                igdbSearchBar.value = '';
+            }}
+            on:input={(e) => searchBacklog(e.target.value)}
+            >
+
+        <div class="flex flex-col overflow-y-scroll max-h-80">
+            {#each backlogSearch as game}
+                <button 
+                    class="flex gap-4 p-2 w-[500px] rounded-md hover:bg-base"
+                    on:click={() => {
+                        moveToList(game, addGameList);
+                        addGameModal.hide();
+                        lists = lists;
+                    }}
+                    >
+                    <img class="game h-24" src={game.cover} alt="Game Cover">
+                    <div class="flex flex-col text-left">
+                        <h1 class="text-white uppercase font-lalezar text-xl">{game.name}</h1>
+                        <Rating rating={game.rating} max={5} />
+                        <p class="text-surface0 line-clamp-2">{game.description}</p>
+                    </div>
+                </button>
+            {/each}
+        </div>
+
+        <div class="flex items-center gap-2">
+            <div class="h-px flex-grow bg-base"></div>
+            <p class="text-surface0">OR</p>
+            <div class="h-px flex-grow bg-base"></div>
+        </div>
+
+        <input 
+            class="bg-base text-text px-4 py-2 rounded-md placeholder:text-surface0 w-[500px] outline-none focus:outline-mauve"
+            type="text"
+            placeholder="Search IGDB"
+            bind:this={igdbSearchBar}
+            on:focus={() => {
+                backlogSearch = [];
+                backlogSearchBar.value = '';
+            }}
+            on:input={async (e) => {
+                igdbSearch = await GameAPI.searchIGDB(e.target.value);
+            }}
+            >
+
+        <div class="flex flex-col overflow-y-scroll max-h-80">
+            {#each igdbSearch as game}
+                <button 
+                    class="flex gap-4 p-2 w-[500px] rounded-md hover:bg-base"
+                    on:click={async () => {
+                        let newGame = await GameAPI.addIGDB(game);
+                        await GameAPI.moveToList(newGame, addGameList);
+                        addGameModal.hide();
+                        lists = lists;
+                    }}
+                    >
+                    <img class="game h-24" src={game.cover} alt="Game Cover">
+                    <div class="flex flex-col text-left">
+                        <h1 class="text-white uppercase font-lalezar text-xl">{game.name}</h1>
+                        <p class="text-surface0 line-clamp-3">{game.description}</p>
+                    </div>
+                </button>
+            {/each}
+        </div>
+    </div>
+</Modal>
+
+<Modal bind:this={deleteListConfirmModal}>
+    {#if listToDelete}
+        <div class="flex flex-col gap-4 items-center">
+            <h1 class="text-lg font-lalezar text-white">Are you sure you want to delete {listToDelete.name}</h1>
+            <div class="flex gap-2">
+                <button 
+                    class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
+                    on:click={() => deleteListConfirmModal.hide()}
+                    >
+                    NO
+                </button>
+                <button 
+                    class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
+                    on:click={() => {
+                        deleteListConfirmModal.hide();
+                        removeList(listToDelete.id);
+                    }}
+                    >
+                    YES
+                </button>
+            </div>
+        </div>
+    {/if}
+</Modal>
+
+<Modal 
+    bind:this={addGameListModal} 
+    on:close={() => (addGameListName.value = '')}
+    >
+    <div class="flex gap-4 items-center w-[500px]">
+        <!-- TODO: Fix type error -->
+        <input
+            class="bg-base text-text px-4 py-2 rounded-md placeholder:text-surface0 w-[500px] outline-none focus:outline-mauve"
+            type="text"
+            bind:this={addGameListName}
+            placeholder="Game list name"
+            >
+
+        <button 
+            class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
+            on:click={() => {
+                addGameListModal.hide();
+                addList(addGameListName.value);
+            }}
+            >
+            CREATE
+        </button>
+    </div>
+</Modal>
+
+<Modal 
+    bind:this={editGameListModal} 
+    on:close={() => (editGameListName.value = '')}
+    >
+    <div class="flex gap-4 items-center w-[500px]">
+        <!-- TODO: Fix type error -->
+        <input
+            class="bg-base text-text px-4 py-2 rounded-md placeholder:text-surface0 w-[500px] outline-none focus:outline-mauve"
+            type="text"
+            bind:this={editGameListName}
+            placeholder="Game list name"
+            >
+
+        <button 
+            class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
+            on:click={() => {
+                editGameListModal.hide();
+                editName(listToEdit, editGameListName.value);
+            }}
+            >
+            UPDATE
+        </button>
+    </div>
+</Modal>
+
+<Modal 
+    bind:this={editGameModal} 
+    on:close={async () => {
+        gameToEdit = null;
+        await refreshLists();
+    }}
+    >
+    {#if gameToEdit}
+        <EditGameModal game={gameToEdit} />
+    {/if}
+</Modal>
+
+<Modal bind:this={deleteGameConfirmModal}>
+    {#if selectedGame}
+        <ConfirmationModal 
+            on:cancel={() => deleteListConfirmModal.hide()}
+            on:confirm={async () => {
+                if (!selectedGame) {
+                    return;
+                }
+
+                deleteGameConfirmModal.hide();
+                await GameAPI.remove(selectedGame.id);
+                await refreshLists();
+            }}
+            message="Are you sure you want to delete {selectedGame.name}?"
+            />
+    {/if}
+</Modal>

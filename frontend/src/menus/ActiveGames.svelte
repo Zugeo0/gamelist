@@ -1,158 +1,196 @@
 
 <script lang="ts">
+    import { GameListAPI, type GameList } from "../api/GameLists"; 
+    import { GameAPI, type Game } from "../api/Games";
+    import { formatDate } from "../util";
+    import { Link, navigate } from 'svelte-routing';
     import Icon from "@iconify/svelte";
     import Rating from "../components/Rating.svelte";
-    import { getGameLists, setGameCompleted, type GameList, getFrontGameInList, type GameData, moveGameToBacklog, updateGameRating } from "../api";
-    import Dropdown from "../components/Dropdown.svelte";
     import { onMount } from "svelte";
-    import { navigate } from "svelte-routing";
+    import Modal from "../components/Modal.svelte";
+    import ConfirmationModal from "../components/ConfirmationModal.svelte";
+    import EditGameModal from "../components/EditGameModal.svelte";
 
-    let activeList: GameList | null = null;
+    let lists: GameList[] | null = null;
 
-    let gamelists: GameList[];
-    let game: GameData | null;
+    let deleteConfirmModal: Modal;
+    let gameToDelete: Game | null = null;
+
+    let editGameModal: Modal;
+    let gameToEdit: Game | null = null;
 
     onMount(async () => {
-        await updateGameLists();
-        activeList = gamelists[0];
-        game = await getFrontGameInList(activeList.id);
-    });
+        lists = await fetchLists();
+    })
 
-    async function updateGameLists() {
-        gamelists = await getGameLists();
-
-        if (gamelists.length == 0) {
-            activeList = null;
-            return;
-        }
+    async function refreshList() {
+        lists = await fetchLists();
     }
 
-    async function setGameList(event: CustomEvent<number>) {
-        await updateGameLists();
-        const listId = event.detail;
-        activeList = gamelists.find(list => list.id == listId) ?? null;
-
-        if (!activeList) {
-            game = null;
-            return;
-        }
-
-        game = await getFrontGameInList(activeList.id);
+    async function fetchLists(): Promise<GameList[]> {
+        return await GameListAPI.all();
     }
 
-    async function completeActiveGame() {
-        setGameCompleted(game!.id, true);
-        game = await getFrontGameInList(activeList!.id);
-        navigate("/completions");
+    async function fetchFront(list: GameList): Promise<Game | null> {
+        return await GameAPI.front(list)
     }
 
-    async function moveActiveGameToBacklog() {
-        moveGameToBacklog(game!.id);
-        game = await getFrontGameInList(activeList!.id);
+    async function completeGame(game: Game) {
+        await GameAPI.complete(game);
+        navigate('/completions');
     }
 
-    async function setActiveGameRating(event: CustomEvent<number>) {
-        updateGameRating(game!.id, event.detail);
-    }
-
-    function formatDate(date: Date): string {
-        let month = '';
-        switch (date.getMonth()) {
-            case 0:  month = 'Jan'; break;
-            case 1:  month = 'Feb'; break;
-            case 2:  month = 'Mar'; break;
-            case 3:  month = 'Apr'; break;
-            case 4:  month = 'May'; break;
-            case 5:  month = 'Jun'; break;
-            case 6:  month = 'Jul'; break;
-            case 7:  month = 'Aug'; break;
-            case 8:  month = 'Sep'; break;
-            case 9:  month = 'Oct'; break;
-            case 10: month = 'Nov'; break;
-            case 11: month = 'Dec'; break;
-        }
-        return `${date.getDate()}. ${month} ${date.getFullYear()}`
+    async function moveGameToBacklog(game: Game) {
+        await GameAPI.moveToBacklog(game);
+        await refreshList();
     }
 </script>
 
-{#if activeList}
-    <div class="w-full h-full flex-col">
-        <!-- Artwork -->
-        {#if game}
-            <div class="w-full h-1/2 bg-crust border-l border-l-base flex justify-center items-center overflow-hidden">
-                {#if game.artwork_url}
-                    <img class="select-none h-full w-full object-cover" src={game.artwork_url} alt="Artwork">
-                {/if}
-            </div>
-        {/if}
+<div class="w-full h-full flex flex-col">
+    {#if lists} 
+        {#each lists as list}
+            {#await fetchFront(list)}
+                <p>Loading...</p>
+            {:then game} 
 
-        <!-- Control Bar -->
-        <div class="h-8 bg-crust flex flex-row justify-between gap-2 items-center border-t border-b border-black">
+                <!-- Game List -->
+                <div class="w-full p-3 flex flex-row gap-2 border-b border-base items-stretch h-fit">
 
-            <!-- Left Side -->
-            <div class="h-full flex flex-row gap-2 items-center">
-
-                <!-- Game List Selection Dropdown -->
-                <Dropdown on:listUpdated={updateGameLists} on:select={setGameList} {gamelists} />
-
-                <!-- Game Info -->
-                {#if game}
-                    <!-- Last Played Display -->
-                    <p class="select-none mx-2">Last Played</p>
-                    <p class="select-none text-mauve font-bold mr-6">{game.state?.last_played ? formatDate(game.state?.last_played) : "Never"}</p>
-
-                    <!-- Playtime Display -->
-                    {#if game.state && game.state.gametime_min > 0}
-                        <Icon width={20} height={20} icon="mingcute:time-fill" />
-                        <p class="select-none">{game.state.gametime_min < 60 ? `${Math.round(game.state.gametime_min)} minutes` : `${Math.round(game.state.gametime_min / 6) / 10} hours`}</p>
+                    <!-- Up Next Cover -->
+                    {#if game}
+                        <img class="game h-0 min-h-full" src={game.cover} alt="Game Cover">
+                    {:else}
+                        <div class="game h-0 min-h-full border border-base flex justify-center items-center text-base font-bold text-3xl">
+                            EMPTY
+                        </div>
                     {/if}
-                {/if}
-            </div>
 
-            <!-- Right Side -->
-            <div class="h-full flex flex-row-reverse gap-2 items-center">
-                {#if game && game.state}
-                    <!-- Complete Game Button -->
-                    <button on:click={completeActiveGame} class="mr-2 px-2 h-6 bg-mantle rounded-md border border-green text-green font-bold flex flex-row items-center gap-2 hover:bg-green hover:text-black">
-                        COMPLETE
-                        <Icon width={16} icon="fluent-mdl2:completed-solid" />
-                    </button>
+                    <div class="min-w-px h-full bg-base"></div>
 
-                    <!-- Move To Backlog Button -->
-                    <button on:click={moveActiveGameToBacklog} class="px-2 h-6 bg-mantle rounded-md border border-base hover:bg-peach hover:border-peach hover:text-black">
-                        <Icon width={16} icon="fa6-solid:dumpster" />
-                    </button>
+                    <!-- List Details -->
+                    <div class="flex flex-col gap-2 flex-grow">
 
-                    {#if game.state.last_played}
-                        <Rating on:update={setActiveGameRating} class="mx-2" rating={game.state.user_rating ?? 0} max={5} />
-                    {/if}
-                {/if}
-            </div>
-        </div>
+                        <!-- Toolbar -->
+                        <div class="toolbar overflow-hidden group">
 
-        <!-- Game Info -->
-        <div class="flex-grow p-4 pt-8">
-            {#if game}
-                <!-- Game title -->
-                <h1 class="text-5xl font-lalezar text-white mb-4">
-                    {game.name}
-                </h1>
+                            <!-- Go to game lists button -->
+                            <Link to="games" class="toolbar-btn flex-grow justify-start py-1 font-lalezar text-2xl">{list.name}</Link>
 
-                <!-- Game description -->
-                <p>
-                    {game.description || "No description"}
-                </p>
-            {:else}
-                <div class="w-full h-full flex flex-col justify-center items-center select-none">
-                    <p class="text-white font-lalezar text-4xl mb-4">No Active Game in {activeList.name}</p>
-                    <p>Go to Game Lists to add a game to this game list</p>
+                            {#if game}
+
+                                <!-- Edit game button -->
+                                <button 
+                                    on:click={() => {
+                                        gameToEdit = game;
+                                        editGameModal.show();
+                                    }}
+                                    class="toolbar-btn opacity-0 group-hover:opacity-100"
+                                    >
+                                    <Icon icon="material-symbols:edit" />
+                                </button>
+
+                                <!-- Delete game button -->
+                                <button 
+                                    on:click={() => {
+                                        gameToDelete = game;
+                                        deleteConfirmModal.show();
+                                    }} 
+                                    class="toolbar-btn opacity-0 group-hover:opacity-100"
+                                    >
+                                    <Icon icon="mdi:trash" />
+                                </button>
+
+                                <!-- Move game to backlog button -->
+                                <button on:click={() => moveGameToBacklog(game)} class="toolbar-btn opacity-0 group-hover:opacity-100">
+                                    <Icon icon="fa6-solid:dumpster" />
+                                </button>
+
+                                <!-- Complete game button -->
+                                <button on:click={() => completeGame(game)} class="toolbar-btn">
+                                    <p>Complete</p>
+                                    <Icon icon="fluent-mdl2:completed-solid" />
+                                </button>
+
+                            {/if}
+
+                        </div>
+
+                        <!-- Game Details -->
+                        <div class="flex flex-row gap-2 h-52 px-2">
+                            {#if game}
+
+                                <!-- Game info -->
+                                <div class="flex flex-col flex-grow">
+                                    <h1 class="font-lalezar text-white text-3xl uppercase">{ game.name }</h1>
+
+                                    <Rating rating={game.rating} max={5} />
+
+                                    <p class="text-surface2 line-clamp-5 mt-2">{ game.description }</p>
+                                </div>
+
+                                <div class="min-w-px h-full bg-base"></div>
+
+                                <!-- Playtime stats -->
+                                <div class="flex flex-col items-stretch gap-2 min-w-[300px]">
+                                    
+                                    <!-- Last played -->
+                                    <div class="flex flex-row justify-between">
+                                        <p>Last Played</p>
+                                        {#if game.lastPlayed}
+                                            <p class="font-bold text-mauve">{ formatDate(game.lastPlayed) }</p>
+                                        {:else}
+                                            <p class="font-bold text-mauve">Never</p>
+                                        {/if}
+                                    </div>
+
+                                    <!-- Playtime -->
+                                    <div class="flex flex-row justify-between">
+                                        <p>Play Time</p>
+                                        <p class="font-bold text-peach">{game.playtime / 60} hours</p>
+                                    </div>
+                                    
+                                </div>
+                            
+                            {:else}
+
+                                <div class="text-3xl text-cat-base font-bold font-lalezar size-full flex justify-center items-center uppercase">
+                                    No game in list
+                                </div>
+
+                            {/if}
+                        </div>
+
+
+                    </div>
+
                 </div>
-            {/if}
-        </div>
-    </div>
-{:else}
-    <div class="w-full h-full flex flex-col justify-center items-center select-none">
-        <p class="text-white font-lalezar text-4xl mb-4">No Game Lists</p>
-        <p>Go to Game Lists to create a new game list</p>
-    </div>
-{/if}
+                
+            {/await}
+        {/each}
+    {/if}
+</div>
+
+<Modal bind:this={deleteConfirmModal}>
+    {#if gameToDelete}
+        <ConfirmationModal 
+            on:cancel={() => deleteConfirmModal.hide()}
+            on:confirm={async () => {
+                if (!gameToDelete) {
+                    return;
+                }
+
+                deleteConfirmModal.hide();
+                await GameAPI.remove(gameToDelete.id);
+                await refreshList();
+            }}
+            message="Are you sure you want to delete {gameToDelete.name}?"
+            />
+    {/if}
+</Modal>
+
+<Modal bind:this={editGameModal} on:close={async () => await refreshList()}>
+    {#if gameToEdit}
+        <EditGameModal game={gameToEdit} />
+    {/if}
+</Modal>
+
