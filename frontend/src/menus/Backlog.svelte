@@ -5,11 +5,16 @@
     import Icon from "@iconify/svelte";
     import Modal from "../components/Modal.svelte";
     import ConfirmationModal from "../components/ConfirmationModal.svelte";
+    import EditGameModal from "../components/EditGameModal.svelte";
+    import { twMerge } from "tailwind-merge";
 
     let games: Game[];
     let selectedGame: Game | null = null;
 
     let deleteGameModal: Modal;
+    let editGameModal: Modal;
+
+    let gameToEdit: Game | null = null;
 
     onMount(async () => {
         await refreshGames();
@@ -27,17 +32,13 @@
             {#each games as game}
                 <button 
                     on:click={() => {
-                        if (selectedGame === game)
+                        if (selectedGame?.id === game.id)
                             selectedGame = null;
                         else
                             selectedGame = game;
                     }}
                     >
-                    {#if game === selectedGame}
-                        <img class="game h-48 outline outline-mauve" src={game.cover} alt="Game Cover">
-                    {:else}
-                        <img class="game h-48" src={game.cover} alt="Game Cover">
-                    {/if}
+                    <img class={twMerge("game h-48", selectedGame?.id === game.id && "outline outline-mauve")} src={game.cover} alt="Game Cover">
                 </button>
             {/each}
         {/if}
@@ -54,7 +55,13 @@
             </button>
 
             <!-- Edit game list button -->
-            <button class="toolbar-btn">
+            <button 
+                on:click={() => {
+                    gameToEdit = selectedGame;
+                    editGameModal.show();
+                }}
+                class="toolbar-btn"
+                >
                 <Icon icon="material-symbols:edit" />
             </button>
 
@@ -86,5 +93,17 @@
                 await refreshGames();
             }}
             />
+    {/if}
+</Modal>
+
+<Modal 
+    bind:this={editGameModal} 
+    on:close={async () => {
+        gameToEdit = null;
+        await refreshGames();
+    }}
+    >
+    {#if gameToEdit}
+        <EditGameModal game={gameToEdit} />
     {/if}
 </Modal>

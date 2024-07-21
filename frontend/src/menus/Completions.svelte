@@ -5,14 +5,19 @@
     import Rating from "../components/Rating.svelte";
     import Icon from "@iconify/svelte";
     import { formatDate } from "../util";
+    import Modal from "../components/Modal.svelte";
+    import EditGameModal from "../components/EditGameModal.svelte";
 
     let games: Game[] = []
 
+    let editGameModal: Modal;
+    let gameToEdit: Game | null = null;
+
     onMount(async () => {
-        await getCompletedGames();
+        await refreshGames();
     });
 
-    async function getCompletedGames() {
+    async function refreshGames() {
         games = await GameAPI.completed()
     }
 
@@ -45,7 +50,14 @@
                     </button>
 
                     <!-- Edit game list button -->
-                    <button class="toolbar-btn">
+                    <button 
+                        on:click={() => {
+                            gameToEdit = game;
+                            editGameModal.show();
+                        }}
+                        class="toolbar-btn"
+                        >
+                        <p>Edit Game</p>
                         <Icon icon="material-symbols:edit" />
                     </button>
 
@@ -58,15 +70,27 @@
             {#if game.completed}
                 <div class="text-mauve flex flex-col items-center justify-center h-full gap-2 px-8">
                     <Icon class="text-2xl" icon="bxs:calendar" />
-                    <p class="w-fit text-nowrap">{formatDate(game.completed)}</p>
+                    <p class="text-center w-24 text-nowrap">{formatDate(game.completed)}</p>
                 </div>
             {/if}
 
             <div class="text-peach flex flex-col items-center justify-center h-full gap-2 px-8">
                 <Icon class="text-2xl" icon="mingcute:time-fill" />
-                <p class="w-fit text-nowrap">{game.playtime / 60} hours</p>
+                <p class="text-center w-24 text-nowrap">{game.playtime / 60} hours</p>
             </div>
 
         </div>
     {/each}
 </div>
+
+<Modal 
+    bind:this={editGameModal} 
+    on:close={async () => {
+        gameToEdit = null;
+        await refreshGames();
+    }}
+    >
+    {#if gameToEdit}
+        <EditGameModal game={gameToEdit} />
+    {/if}
+</Modal>

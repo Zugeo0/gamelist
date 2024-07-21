@@ -188,7 +188,7 @@
     {/if}
 </Modal>
 
-<Modal bind:this={editGameModal} on:close={async () => refreshList()}>
+<Modal bind:this={editGameModal} on:close={async () => await refreshList()}>
     {#if gameToEdit}
         <EditGameModal game={gameToEdit} />
     {/if}
