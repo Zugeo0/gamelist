@@ -27,7 +27,7 @@
     }
 </script>
 
-<div class="w-full h-full flex flex-col p-4 gap-4">
+<div class="w-full h-full flex flex-col p-4 gap-4 overflow-y-scroll">
     {#each games as game}
         <div class="flex gap-4 group">
             <img class="game h-32" src={game.cover} alt="Game Cover">
