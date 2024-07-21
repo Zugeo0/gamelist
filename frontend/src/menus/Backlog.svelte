@@ -7,12 +7,14 @@
     import ConfirmationModal from "../components/ConfirmationModal.svelte";
     import EditGameModal from "../components/EditGameModal.svelte";
     import { twMerge } from "tailwind-merge";
+    import AddToListModal from "../components/AddToListModal.svelte";
 
     let games: Game[];
     let selectedGame: Game | null = null;
 
     let deleteGameModal: Modal;
     let editGameModal: Modal;
+    let moveGameModal: Modal;
 
     let gameToEdit: Game | null = null;
 
@@ -49,7 +51,10 @@
             <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{selectedGame.name}</h1>
 
             <!-- Move game to game list button -->
-            <button class="toolbar-btn">
+            <button 
+                on:click={() => moveGameModal.show()}
+                class="toolbar-btn"
+                >
                 <p>Move to list</p>
                 <Icon icon="material-symbols:move-up" />
             </button>
@@ -105,5 +110,17 @@
     >
     {#if gameToEdit}
         <EditGameModal game={gameToEdit} />
+    {/if}
+</Modal>
+
+<Modal bind:this={moveGameModal}>
+    {#if selectedGame}
+        <AddToListModal 
+            on:select={async () => {
+                await refreshGames();
+                moveGameModal.hide();
+            }}
+            game={selectedGame}
+            />
     {/if}
 </Modal>
