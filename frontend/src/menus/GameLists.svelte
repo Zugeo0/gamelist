@@ -8,14 +8,18 @@
     import { Link } from "svelte-routing";
     import Modal from "../components/Modal.svelte";
     import Rating from "../components/Rating.svelte";
+    import EditGameModal from "../components/EditGameModal.svelte";
+    import ConfirmationModal from "../components/ConfirmationModal.svelte";
 
     let lists: GameList[] | null = null;
 
     let addGameModal: Modal;
     let addGameList: GameList;
 
-    let deleteConfirmModal: Modal;
+    let deleteListConfirmModal: Modal;
     let listToDelete: GameList;
+
+    let deleteGameConfirmModal: Modal;
 
     let addGameListModal: Modal;
     let addGameListName: HTMLInputElement;
@@ -24,19 +28,20 @@
     let editGameListName: HTMLInputElement;
     let listToEdit: GameList;
 
+    let editGameModal: Modal;
+    let gameToEdit: Game | null = null;
+
     let backlogSearch: Game[] = [];
     let backlogSearchBar: HTMLInputElement;
 
+    let selectedGame: Game | null = null;
+
     onMount(async () => {
-        lists = await fetchLists();
+        await refreshLists();
     })
 
     async function refreshLists() {
-        lists = await fetchLists();
-    }
-
-    async function fetchLists(): Promise<GameList[]> {
-        return await GameListAPI.all();
+        lists = await GameListAPI.all();
     }
 
     async function fetchGames(list: GameList): Promise<Game[]> {
@@ -82,94 +87,141 @@
     }
 </script>
 
-<div class="w-full h-full flex flex-col overflow-y-scroll">
-    {#if lists}
-        {#each lists as list}
-            {#await fetchGames(list)}
-                <p>Loading...</p>
-            {:then games} 
+<div class="w-full h-full relative">
+    <div class="w-full h-full flex flex-col overflow-y-scroll">
+        {#if lists}
+            {#each lists as list}
+                {#await fetchGames(list)}
+                    <p>Loading...</p>
+                {:then games} 
 
-                <!-- Game List -->
-                <div class="w-full p-3 flex flex-row gap-2 border-b border-base items-stretch h-fit">
+                    <!-- Game List -->
+                    <div class="w-full p-3 flex flex-row gap-2 border-b border-base items-stretch h-fit">
 
-                    <!-- Up Next Cover -->
-                    {#if games[0]}
-                        <Link class="game h-0 min-h-full" to="/">
-                            <img class="game" src={games[0].cover} alt="Game Cover">
-                        </Link>
-                    {:else}
-                        <div class="game h-0 min-h-full border border-base flex justify-center items-center text-base font-bold text-3xl">
-                            EMPTY
+                        <!-- Up Next Cover -->
+                        {#if games[0]}
+                            <Link class="game h-0 min-h-full" to="/">
+                                <img class="game" src={games[0].cover} alt="Game Cover">
+                            </Link>
+                        {:else}
+                            <div class="game h-0 min-h-full border border-base flex justify-center items-center text-base font-bold text-3xl">
+                                EMPTY
+                            </div>
+                        {/if}
+
+                        <div class="min-w-px h-full bg-base"></div>
+
+                        <!-- List Details -->
+                        <div class="flex flex-col gap-2 flex-grow">
+
+                            <!-- Toolbar -->
+                            <div class="toolbar group">
+                                <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{list.name}</h1>
+
+                                <!-- Edit game list button -->
+                                <button 
+                                    on:click={() => {
+                                        listToEdit = list;
+                                        editGameListModal.show();
+                                    }}
+                                    class="toolbar-btn opacity-0 group-hover:opacity-100"
+                                    >
+                                    <Icon icon="material-symbols:edit" />
+                                </button>
+
+                                <!-- Delete game list button -->
+                                <button 
+                                    on:click={() => {
+                                        listToDelete = list;
+                                        deleteListConfirmModal.show();
+                                    }} 
+                                    class="toolbar-btn opacity-0 group-hover:opacity-100"
+                                    >
+                                    <Icon icon="mdi:trash" />
+                                </button>
+
+                                <!-- Add game button -->
+                                <button 
+                                    class="toolbar-btn"
+                                    on:click={() => {
+                                        addGameList = list;
+                                        addGameModal.show();
+                                    }}>
+                                    <p>Add Game</p>
+                                    <Icon icon="material-symbols:add" />
+                                </button>
+
+                            </div>
+
+                            <!-- Games -->
+                            <GameListComponent
+                                bind:selectedGame={selectedGame}
+                                gameList={list}
+                                on:update={() => refreshLists()}
+                                />
+
                         </div>
-                    {/if}
-
-                    <div class="min-w-px h-full bg-base"></div>
-
-                    <!-- List Details -->
-                    <div class="flex flex-col gap-2 flex-grow">
-
-                        <!-- Toolbar -->
-                        <div class="toolbar group">
-                            <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{list.name}</h1>
-
-                            <!-- Edit game list button -->
-                            <button 
-                                on:click={() => {
-                                    listToEdit = list;
-                                    editGameListModal.show();
-                                }}
-                                class="toolbar-btn opacity-0 group-hover:opacity-100"
-                                >
-                                <Icon icon="material-symbols:edit" />
-                            </button>
-
-                            <!-- Delete game list button -->
-                            <button 
-                                on:click={() => {
-                                    listToDelete = list;
-                                    deleteConfirmModal.show();
-                                }} 
-                                class="toolbar-btn opacity-0 group-hover:opacity-100"
-                                >
-                                <Icon icon="mdi:trash" />
-                            </button>
-
-                            <!-- Add game button -->
-                            <button 
-                                class="toolbar-btn"
-                                on:click={() => {
-                                    addGameList = list;
-                                    addGameModal.show();
-                                }}>
-                                <p>Add Game</p>
-                                <Icon icon="material-symbols:add" />
-                            </button>
-
-                        </div>
-
-                        <!-- Games -->
-                        <GameListComponent
-                            gameList={list}
-                            on:update={() => refreshLists()}
-                            />
 
                     </div>
+                    
+                {/await}
+            {/each}
 
-                </div>
-                
-            {/await}
-        {/each}
+            <!-- Create game list button -->
+            <button 
+                class="mx-auto px-16 py-4 mt-12 mb-24 bg-base rounded-md hover:bg-surface0"
+                on:click={() => addGameListModal.show()}
+                >
+                <Icon icon="material-symbols:add">
+                </Icon>
+            </button>
 
-        <!-- Create game list button -->
-        <button 
-            class="mx-auto px-16 py-4 my-12 bg-base rounded-md hover:bg-surface0"
-            on:click={() => addGameListModal.show()}
-            >
-            <Icon icon="material-symbols:add">
-            </Icon>
-        </button>
+        {/if}
+    </div>
 
+    {#if selectedGame}
+        <div class="absolute left-0 right-0 bottom-0 p-4">
+            <div class="toolbar">
+                <h1 class="toolbar-element flex-grow justify-start py-1 font-lalezar text-2xl">{selectedGame.name}</h1>
+
+                <!-- Move game to game list button -->
+                <button 
+                    on:click={async () => {
+                        if (selectedGame) {
+                            GameAPI.moveToBacklog(selectedGame);
+                            await refreshLists();
+                            selectedGame = null;
+                        }
+                    }}
+                    class="toolbar-btn"
+                    >
+                    <p>Move to backlog</p>
+                    <Icon icon="fa6-solid:dumpster" />
+                </button>
+
+                <!-- Edit game list button -->
+                <button 
+                    on:click={() => {
+                        gameToEdit = selectedGame;
+                        editGameModal.show();
+                    }}
+                    class="toolbar-btn"
+                    >
+                    <Icon icon="material-symbols:edit" />
+                </button>
+
+                <!-- Delete game list button -->
+                <button 
+                    on:click={() => deleteGameConfirmModal.show()}
+                    class="toolbar-btn"
+                    >
+                    <Icon icon="mdi:trash" />
+                </button>
+
+            </div>
+        </div>
     {/if}
+
 </div>
 
 <Modal 
@@ -228,21 +280,21 @@
     </div>
 </Modal>
 
-<Modal bind:this={deleteConfirmModal}>
+<Modal bind:this={deleteListConfirmModal}>
     {#if listToDelete}
         <div class="flex flex-col gap-4 items-center">
             <h1 class="text-lg font-lalezar text-white">Are you sure you want to delete {listToDelete.name}</h1>
             <div class="flex gap-2">
                 <button 
                     class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
-                    on:click={() => deleteConfirmModal.hide()}
+                    on:click={() => deleteListConfirmModal.hide()}
                     >
                     NO
                 </button>
                 <button 
                     class="text-text px-4 py-2 bg-base rounded-md font-bold w-24"
                     on:click={() => {
-                        deleteConfirmModal.hide();
+                        deleteListConfirmModal.hide();
                         removeList(listToDelete.id);
                     }}
                     >
@@ -301,4 +353,34 @@
             UPDATE
         </button>
     </div>
+</Modal>
+
+<Modal 
+    bind:this={editGameModal} 
+    on:close={async () => {
+        gameToEdit = null;
+        await refreshLists();
+    }}
+    >
+    {#if gameToEdit}
+        <EditGameModal game={gameToEdit} />
+    {/if}
+</Modal>
+
+<Modal bind:this={deleteGameConfirmModal}>
+    {#if selectedGame}
+        <ConfirmationModal 
+            on:cancel={() => deleteListConfirmModal.hide()}
+            on:confirm={async () => {
+                if (!selectedGame) {
+                    return;
+                }
+
+                deleteGameConfirmModal.hide();
+                await GameAPI.remove(selectedGame.id);
+                await refreshLists();
+            }}
+            message="Are you sure you want to delete {selectedGame.name}?"
+            />
+    {/if}
 </Modal>

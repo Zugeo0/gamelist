@@ -116,7 +116,7 @@
                         </div>
 
                         <!-- Game Details -->
-                        <div class="flex flex-row gap-2 h-48 px-2">
+                        <div class="flex flex-row gap-2 h-52 px-2">
                             {#if game}
 
                                 <!-- Game info -->
