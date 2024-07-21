@@ -17,3 +17,14 @@ export function formatDate(date: Date): string {
     }
     return `${date.getDate()}. ${month} ${date.getFullYear()}`
 }
+
+export function pad(str: string, char: string, size: number): string {
+    for (let i = str.length; i < size; i++) {
+        str = char + str;
+    }
+    return str;
+}
+
+export function zeroPad(num: number, size: number): string {
+    return pad(num.toString(), "0", size);
+}

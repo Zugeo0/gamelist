@@ -9,11 +9,15 @@
     import { onMount } from "svelte";
     import Modal from "../components/Modal.svelte";
     import ConfirmationModal from "../components/ConfirmationModal.svelte";
+    import EditGameModal from "../components/EditGameModal.svelte";
 
     let lists: GameList[] | null = null;
 
     let deleteConfirmModal: Modal;
-    let gameToDelete: Game;
+    let gameToDelete: Game | null = null;
+
+    let editGameModal: Modal;
+    let gameToEdit: Game | null = null;
 
     onMount(async () => {
         lists = await fetchLists();
@@ -29,10 +33,6 @@
 
     async function fetchFront(list: GameList): Promise<Game | null> {
         return await GameAPI.front(list)
-    }
-
-    async function updateRating(game: Game, rating: number) {
-        await GameAPI.updateRating(game, rating);
     }
 
     async function completeGame(game: Game) {
@@ -79,7 +79,13 @@
                             {#if game}
 
                                 <!-- Edit game button -->
-                                <button class="toolbar-btn opacity-0 group-hover:opacity-100">
+                                <button 
+                                    on:click={() => {
+                                        gameToEdit = game;
+                                        editGameModal.show();
+                                    }}
+                                    class="toolbar-btn opacity-0 group-hover:opacity-100"
+                                    >
                                     <Icon icon="material-symbols:edit" />
                                 </button>
 
@@ -117,9 +123,9 @@
                                 <div class="flex flex-col flex-grow">
                                     <h1 class="font-lalezar text-white text-3xl uppercase">{ game.name }</h1>
 
-                                    <Rating rating={game.rating} max={5} on:update={e => updateRating(game, e.detail)} interactable />
+                                    <Rating rating={game.rating} max={5} />
 
-                                    <p class="text-surface2 line-clamp-5">{ game.description }</p>
+                                    <p class="text-surface2 line-clamp-5 mt-2">{ game.description }</p>
                                 </div>
 
                                 <div class="min-w-px h-full bg-base"></div>
@@ -140,7 +146,7 @@
                                     <!-- Playtime -->
                                     <div class="flex flex-row justify-between">
                                         <p>Play Time</p>
-                                        <p class="font-bold text-peach">{game.playtime} hours</p>
+                                        <p class="font-bold text-peach">{game.playtime / 60} hours</p>
                                     </div>
                                     
                                 </div>
@@ -169,11 +175,22 @@
         <ConfirmationModal 
             on:cancel={() => deleteConfirmModal.hide()}
             on:confirm={async () => {
+                if (!gameToDelete) {
+                    return;
+                }
+
                 deleteConfirmModal.hide();
                 await GameAPI.remove(gameToDelete.id);
                 await refreshList();
             }}
-            message="Are you sure you want to delete {gameToDelete.name}"
+            message="Are you sure you want to delete {gameToDelete.name}?"
             />
     {/if}
 </Modal>
+
+<Modal bind:this={editGameModal} on:close={async () => refreshList()}>
+    {#if gameToEdit}
+        <EditGameModal game={gameToEdit} />
+    {/if}
+</Modal>
+

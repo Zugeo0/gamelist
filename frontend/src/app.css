@@ -22,4 +22,8 @@
     .toolbar-btn {
         @apply toolbar-element hover:bg-surface0
     }
+
+    .minimal-input {
+        @apply bg-transparent border-b-2 border-surface0 placeholder:text-surface0 focus:border-green text-text text-xl p-1 outline-none
+    }
 }

@@ -174,6 +174,8 @@ export class GameAPI {
     }
 
     static async updateRating(game: Game, rating: number) {
+        game = {...game};
+
         if (rating < 0 || rating > 5) {
             return;
         }
@@ -183,12 +185,19 @@ export class GameAPI {
     }
 
     static async complete(game: Game) {
+        game = {...game};
         game.list = null;
         game.completed = new Date();
+
+        if (!game?.lastPlayed || game.completed > game.lastPlayed) {
+            game.lastPlayed = game.completed;
+        }
+
         await GameAPI.put(game);
     }
 
     static async moveToList(game: Game, list: GameList) {
+        game = {...game};
         game.list = list.id;
         game.completed = null;
         game.order = GameAPI.games.filter(g => g.list === list.id).length;
@@ -196,6 +205,7 @@ export class GameAPI {
     }
 
     static async moveToBacklog(game: Game) {
+        game = {...game};
         game.list = null;
         game.completed = null;
         game.order = 0;
@@ -203,6 +213,7 @@ export class GameAPI {
     }
 
     static async setOrder(game: Game, newOrder: number) {
+        game = {...game};
         game.order = newOrder;
         await GameAPI.put(game);
     }
