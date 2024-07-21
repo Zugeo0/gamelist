@@ -24,7 +24,7 @@ export class GameAPI {
             lastPlayed: null,
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/e17233dc1c4e3457d5a259c06c7eb502.jpg",
-            list: 0,
+            list: null,
             order: 0,
             completed: null,
         },
@@ -36,8 +36,8 @@ export class GameAPI {
             lastPlayed: null,
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/9daff58346c37a54d31d0219bd873f6a.jpg",
-            list: 0,
-            order: 1,
+            list: null,
+            order: 0,
             completed: null,
         },
         {
@@ -48,8 +48,8 @@ export class GameAPI {
             lastPlayed: null,
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/fb5b3b5d234aa718062e3b4f6c826e23.jpg",
-            list: 0,
-            order: 2,
+            list: null,
+            order: 0,
             completed: null
         },
         {
@@ -60,8 +60,8 @@ export class GameAPI {
             lastPlayed: null,
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/ef95b846b1e8469e32e7831643ca00ef.jpg",
-            list: 0,
-            order: 3,
+            list: null,
+            order: 0,
             completed: null
         },
         {
@@ -72,8 +72,8 @@ export class GameAPI {
             lastPlayed: null,
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/583a9a3c0b349b7282d5db3aee07ac43.jpg",
-            list: 0,
-            order: 4,
+            list: null,
+            order: 0,
             completed: null
         },
         {
@@ -84,8 +84,8 @@ export class GameAPI {
             lastPlayed: null,
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/f66a0c26ea3a640283a18af4915c577a.jpg",
-            list: 0,
-            order: 5,
+            list: null,
+            order: 0,
             completed: null
         },
         {
@@ -96,8 +96,8 @@ export class GameAPI {
             lastPlayed: null,
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/a7147fd59ab64d16e49e819733ad2187.jpg",
-            list: 0,
-            order: 6,
+            list: null,
+            order: 0,
             completed: null
         },
         {
@@ -108,8 +108,8 @@ export class GameAPI {
             lastPlayed: null,
             playtime: 0,
             cover: "https://cdn2.steamgriddb.com/thumb/fb038c3ed829a992d6d4cc3ce6654290.jpg",
-            list: 0,
-            order: 7,
+            list: null,
+            order: 0,
             completed: null
         },
     ];
