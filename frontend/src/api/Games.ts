@@ -11,6 +11,14 @@ export type Game = {
     list: number | null, // GameList[id] or backlog
     order: number,
     completed: Date | null,
+    igdbId: number,
+};
+
+export type IGDBGame = {
+    id: number,
+    name: string,
+    description: string,
+    cover: string, // url
 };
 
 export class GameAPI {
@@ -27,6 +35,7 @@ export class GameAPI {
             list: null,
             order: 0,
             completed: null,
+            igdbId: -1,
         },
         {
             id: 1,
@@ -39,6 +48,7 @@ export class GameAPI {
             list: null,
             order: 0,
             completed: null,
+            igdbId: -1,
         },
         {
             id: 2,
@@ -50,7 +60,8 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/fb5b3b5d234aa718062e3b4f6c826e23.jpg",
             list: null,
             order: 0,
-            completed: null
+            completed: null,
+            igdbId: -1,
         },
         {
             id: 3,
@@ -62,7 +73,8 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/ef95b846b1e8469e32e7831643ca00ef.jpg",
             list: null,
             order: 0,
-            completed: null
+            completed: null,
+            igdbId: -1,
         },
         {
             id: 4,
@@ -74,7 +86,8 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/583a9a3c0b349b7282d5db3aee07ac43.jpg",
             list: null,
             order: 0,
-            completed: null
+            completed: null,
+            igdbId: -1,
         },
         {
             id: 5,
@@ -86,7 +99,8 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/f66a0c26ea3a640283a18af4915c577a.jpg",
             list: null,
             order: 0,
-            completed: null
+            completed: null,
+            igdbId: -1,
         },
         {
             id: 6,
@@ -98,7 +112,8 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/a7147fd59ab64d16e49e819733ad2187.jpg",
             list: null,
             order: 0,
-            completed: null
+            completed: null,
+            igdbId: -1,
         },
         {
             id: 7,
@@ -110,14 +125,25 @@ export class GameAPI {
             cover: "https://cdn2.steamgriddb.com/thumb/fb038c3ed829a992d6d4cc3ce6654290.jpg",
             list: null,
             order: 0,
-            completed: null
+            completed: null,
+            igdbId: -1,
         },
     ];
 
-    static async add(game: Game) {
+    private static igdbMock: IGDBGame[] = [
+        {
+            id: 0,
+            name: "Elden Ring",
+            description: "Elden Ring is a fantasy, action and open world game with RPG elements such as stats, weapons and spells. Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring and become an Elden Lord in the Lands Between.",
+            cover: "https://images.igdb.com/igdb/image/upload/t_cover_big/co4jni.webp",
+        },
+    ];
+
+    static async add(game: Game): Promise<Game> {
         let newGame = {...game};
         newGame.id = GameAPI.nextId++;
         GameAPI.games.push(newGame);
+        return {...newGame};
     }
 
     static async get(id: number): Promise<Game | null> {
@@ -222,5 +248,27 @@ export class GameAPI {
         GameAPI.games
             .filter(game => game.list == list.id)
             .forEach(game => game.list = null);
+    }
+
+    static async searchIGDB(search: string): Promise<IGDBGame[]> {
+        return GameAPI.igdbMock
+            .filter(game => game.name.includes(search))
+            .filter(game => !GameAPI.games.find(found => found.igdbId === game.id))
+    }
+
+    static async addIGDB(game: IGDBGame): Promise<Game> {
+        return GameAPI.add({
+            id: 0,
+            name: game.name,
+            description: game.description,
+            rating: 0,
+            lastPlayed: null,
+            playtime: 0,
+            cover: game.cover,
+            list: null,
+            order: 0,
+            completed: null,
+            igdbId: game.id,
+        });
     }
 }

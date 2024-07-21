@@ -31,7 +31,7 @@
 
 <div class="flex flex-col gap-2">
     <input
-        class="bg-base text-text px-4 py-2 mb-4 rounded-md placeholder:text-surface0 w-[500px] outline-none focus:outline-mauve"
+        class="bg-base text-text px-4 py-2 rounded-md placeholder:text-surface0 w-[500px] outline-none focus:outline-mauve"
         type="text"
         placeholder="Search backlog"
         bind:this={searchBar}

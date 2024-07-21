@@ -2,7 +2,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { GameListAPI, type GameList } from "../api/GameLists"; 
-    import { GameAPI, type Game } from "../api/Games";
+    import { GameAPI, type Game, type IGDBGame } from "../api/Games";
     import GameListComponent from "../components/GameListComponent.svelte";
     import Icon from "@iconify/svelte";
     import { Link } from "svelte-routing";
@@ -32,7 +32,9 @@
     let gameToEdit: Game | null = null;
 
     let backlogSearch: Game[] = [];
+    let igdbSearch: IGDBGame[] = [];
     let backlogSearchBar: HTMLInputElement;
+    let igdbSearchBar: HTMLInputElement;
 
     let selectedGame: Game | null = null;
 
@@ -101,7 +103,7 @@
                         <!-- Up Next Cover -->
                         {#if games[0]}
                             <Link class="game h-0 min-h-full" to="/">
-                                <img class="game" src={games[0].cover} alt="Game Cover">
+                                <img class="game h-0 min-h-full" src={games[0].cover} alt="Game Cover">
                             </Link>
                         {:else}
                             <div class="game h-0 min-h-full border border-base flex justify-center items-center text-base font-bold text-3xl">
@@ -238,7 +240,11 @@
             type="text"
             placeholder="Search backlog"
             bind:this={backlogSearchBar}
-            on:focus={() => searchBacklog('')}
+            on:focus={() => {
+                searchBacklog('');
+                igdbSearch = [];
+                igdbSearchBar.value = '';
+            }}
             on:input={(e) => searchBacklog(e.target.value)}
             >
 
@@ -272,11 +278,35 @@
             class="bg-base text-text px-4 py-2 rounded-md placeholder:text-surface0 w-[500px] outline-none focus:outline-mauve"
             type="text"
             placeholder="Search IGDB"
+            bind:this={igdbSearchBar}
             on:focus={() => {
                 backlogSearch = [];
                 backlogSearchBar.value = '';
             }}
+            on:input={async (e) => {
+                igdbSearch = await GameAPI.searchIGDB(e.target.value);
+            }}
             >
+
+        <div class="flex flex-col overflow-y-scroll max-h-80">
+            {#each igdbSearch as game}
+                <button 
+                    class="flex gap-4 p-2 w-[500px] rounded-md hover:bg-base"
+                    on:click={async () => {
+                        let newGame = await GameAPI.addIGDB(game);
+                        await GameAPI.moveToList(newGame, addGameList);
+                        addGameModal.hide();
+                        lists = lists;
+                    }}
+                    >
+                    <img class="game h-24" src={game.cover} alt="Game Cover">
+                    <div class="flex flex-col text-left">
+                        <h1 class="text-white uppercase font-lalezar text-xl">{game.name}</h1>
+                        <p class="text-surface0 line-clamp-3">{game.description}</p>
+                    </div>
+                </button>
+            {/each}
+        </div>
     </div>
 </Modal>
 
