@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --cors",
     "dev-build": "vite build --watch --outDir ../backend/frontend --emptyOutDir",
     "build": "vite build",
     "preview": "vite preview",

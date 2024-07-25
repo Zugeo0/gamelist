@@ -17,8 +17,8 @@ type Game struct{
 
 func (o *Game) Create(w http.ResponseWriter, r *http.Request) {
     game := model.Game{}
-    if err := json.NewEncoder(w).Encode(game); err != nil {
-        log.Fatal("Error encoding json ", err)
+    if err := json.NewDecoder(r.Body).Decode(game); err != nil {
+        log.Fatal("Error decoding json ", err)
     }
 
     res := o.DB.Create(&game)
@@ -63,8 +63,8 @@ func (o *Game) GetByID(w http.ResponseWriter, r *http.Request) {
 
 func (o *Game) Put(w http.ResponseWriter, r *http.Request) {
     game := model.Game{}
-    if err := json.NewEncoder(w).Encode(game); err != nil {
-        log.Fatal("Error encoding json ", err)
+    if err := json.NewDecoder(r.Body).Decode(game); err != nil {
+        log.Fatal("Error decoding json ", err)
     }
 
     o.DB.Save(game)

@@ -16,12 +16,12 @@ type GameList struct{
 }
 
 func (o *GameList) Create(w http.ResponseWriter, r *http.Request) {
-    game := model.GameList{}
-    if err := json.NewEncoder(w).Encode(game); err != nil {
-        log.Fatal("Error encoding json ", err)
+    list := model.GameList{}
+    if err := json.NewDecoder(r.Body).Decode(&list); err != nil {
+        log.Fatal("Error decoding json ", err)
     }
 
-    res := o.DB.Create(&game)
+    res := o.DB.Create(&list)
     if res.Error != nil {
         log.Fatal("Error creating database entry ", res.Error)
     }
@@ -30,14 +30,14 @@ func (o *GameList) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (o *GameList) List(w http.ResponseWriter, r *http.Request) {
-    games := []model.GameList{}
-    res := o.DB.Find(&games)
+    lists := []model.GameList{}
+    res := o.DB.Find(&lists)
     if res.Error != nil {
         log.Fatal("Error processing request ", res.Error)
     }
 
     w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(games)
+    json.NewEncoder(w).Encode(lists)
 }
 
 func (o *GameList) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -49,22 +49,22 @@ func (o *GameList) GetByID(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    game := model.GameList{}
-    res := o.DB.Find(&game, id)
+    list := model.GameList{}
+    res := o.DB.Find(&list, id)
 
     if res.RowsAffected == 0 {
         w.WriteHeader(http.StatusNotFound)
         return
     } else {
         w.WriteHeader(http.StatusOK)
-        json.NewEncoder(w).Encode(game)
+        json.NewEncoder(w).Encode(list)
     }
 }
 
 func (o *GameList) Put(w http.ResponseWriter, r *http.Request) {
     game := model.GameList{}
-    if err := json.NewEncoder(w).Encode(game); err != nil {
-        log.Fatal("Error encoding json ", err)
+    if err := json.NewDecoder(r.Body).Decode(&game); err != nil {
+        log.Fatal("Error decoding json ", err)
     }
 
     o.DB.Save(game)

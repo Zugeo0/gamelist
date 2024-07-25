@@ -6,12 +6,21 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 func (app *App) loadRoutes() {
     router := chi.NewRouter()
 
     router.Use(middleware.Logger)
+    router.Use(cors.Handler(cors.Options{
+        AllowedOrigins:   []string{"https://*", "http://*"},
+        AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+        ExposedHeaders:   []string{"Link"},
+        AllowCredentials: false,
+        MaxAge:           300,
+    }))
     router.Route("/api", app.loadApiRoutes)
 
     app.router = router
@@ -40,7 +49,9 @@ func (app *App) loadGameRoutes(router chi.Router) {
 }
 
 func (app *App) loadGameListRoutes(router chi.Router) {
-    gameListHandler := &handler.GameList{}
+    gameListHandler := &handler.GameList{
+        DB: app.db,
+    }
 
     router.Post("/", gameListHandler.Create)
     router.Get("/", gameListHandler.List)
