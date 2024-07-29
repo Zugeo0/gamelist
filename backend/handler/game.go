@@ -17,7 +17,7 @@ type Game struct{
 
 func (o *Game) Create(w http.ResponseWriter, r *http.Request) {
     game := model.Game{}
-    if err := json.NewDecoder(r.Body).Decode(game); err != nil {
+    if err := json.NewDecoder(r.Body).Decode(&game); err != nil {
         log.Fatal("Error decoding json ", err)
     }
 
@@ -27,6 +27,7 @@ func (o *Game) Create(w http.ResponseWriter, r *http.Request) {
     }
 
     w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(game)
 }
 
 func (o *Game) List(w http.ResponseWriter, r *http.Request) {
@@ -63,7 +64,7 @@ func (o *Game) GetByID(w http.ResponseWriter, r *http.Request) {
 
 func (o *Game) Put(w http.ResponseWriter, r *http.Request) {
     game := model.Game{}
-    if err := json.NewDecoder(r.Body).Decode(game); err != nil {
+    if err := json.NewDecoder(r.Body).Decode(&game); err != nil {
         log.Fatal("Error decoding json ", err)
     }
 

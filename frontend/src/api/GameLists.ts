@@ -1,5 +1,5 @@
 
-import { API_URL } from "./Common";
+import { API_URL, validate } from "./Common";
 
 export type GameList = {
     id: number,
@@ -15,17 +15,13 @@ export class GameListAPI {
             }),
         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to add new game list: ${response.status} ${response.statusText}`);
-        }
+        validate(response, "Failed to add new game list");
     }
 
     static async get(id: number): Promise<GameList | null> {
         const response = await fetch(API_URL + `/lists/${id}`);
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch game lists: ${response.status} ${response.statusText}`);
-        }
+        validate(response, "Failed to fetch game list by id");
 
         return await response.json();
     }
@@ -33,9 +29,7 @@ export class GameListAPI {
     static async all(): Promise<GameList[]> {
         const response = await fetch(API_URL + "/lists");
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch game lists: ${response.status} ${response.statusText}`);
-        }
+        validate(response, "Failed to fetch game lists");
 
         return await response.json();
     }
@@ -49,9 +43,7 @@ export class GameListAPI {
             }),
         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to add new game list: ${response.status} ${response.statusText}`);
-        }
+        validate(response, "Failed to update game list");
     }
 
     static async remove(id: number) {
@@ -59,9 +51,7 @@ export class GameListAPI {
             method: "DELETE", 
         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to add new game list: ${response.status} ${response.statusText}`);
-        }
+        validate(response, "Failed to remove game list");
     }
 }
 
