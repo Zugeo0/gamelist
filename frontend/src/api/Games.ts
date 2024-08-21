@@ -28,12 +28,12 @@ function fromResponse(game: any): Game {
         name: game.name,
         description: game.description,
         rating: game.rating,
-        lastPlayed: game.last_played,
+        lastPlayed: game.last_played ? new Date(game.last_played) : null,
         playtime: game.playtime,
         cover: game.cover,
-        list: game.list,
+        list: game.list === 0 ? null : game.list,
         order: game.order,
-        completed: game.completed,
+        completed: game.completed ? new Date(game.completed) : null,
         igdbId: game.igdb_id,
     };
 }
@@ -134,13 +134,11 @@ export class GameAPI {
     }
 
     static async front(list: GameList): Promise<Game | null> {
-        let game = GameAPI.games
+        const games = await GameAPI.all();
+        let game = games
             .filter(game => game.list === list.id)
             .sort((a, b) => a.order - b.order)
             .at(0);
-        
-        if (game)
-            game = {...game};
 
         return game ?? null;
     }
@@ -151,7 +149,9 @@ export class GameAPI {
         validate(response, "Failed to fetch games");
 
         const json = await response.json();
-        return json.map((game: any) => fromResponse(game))
+        const games = json.map((game: any) => fromResponse(game))
+        console.log(games);
+        return games;
     }
 
     static async backlog(): Promise<Game[]> {
@@ -160,11 +160,11 @@ export class GameAPI {
     }
 
     static async completed(): Promise<Game[]> {
-        return [...GameAPI.games
+        const games = await GameAPI.all();
+        return games
             .filter(game => game.completed)
             .sort((a, b) => a.completed!.getTime() - b.completed!.getTime())
-            .toReversed()
-            .map(game => { return {...game} })];
+            .toReversed();
     }
 
     static async put(game: Game) {
@@ -185,7 +185,8 @@ export class GameAPI {
     }
 
     static async fromList(list: GameList): Promise<Game[]> {
-        return GameAPI.games
+        const games = await GameAPI.all();
+        return games
             .filter(game => game.list === list.id)
             .sort((a, b) => a.order - b.order);
     }
@@ -236,9 +237,13 @@ export class GameAPI {
     }
 
     static async removeFromList(list: GameList) {
-        GameAPI.games
+        const games = await GameAPI.all();
+        games
             .filter(game => game.list == list.id)
-            .forEach(game => game.list = null);
+            .forEach(game => {
+                game.list = null;
+                GameAPI.put(game);
+            });
     }
 
     static async searchIGDB(search: string): Promise<IGDBGame[]> {
@@ -248,7 +253,7 @@ export class GameAPI {
     }
 
     static async addIGDB(game: IGDBGame): Promise<Game> {
-        return GameAPI.add({
+        return await GameAPI.add({
             id: 0,
             name: game.name,
             description: game.description,
