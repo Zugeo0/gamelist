@@ -1,6 +1,7 @@
 package application
 
 import (
+	"backend/igdb"
 	"backend/model"
 	"context"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 type App struct {
     router http.Handler
     db *gorm.DB
+    igdb *igdb.Client
 }
 
 func New() (*App, error) {
@@ -21,8 +23,14 @@ func New() (*App, error) {
         return nil, fmt.Errorf("Failed to connect to database: %w", err)
     }
 
+    igdb, err := igdb.Connect()
+    if err != nil {
+        return nil, fmt.Errorf("Failed to connect to IGDB: %w", err)
+    }
+
     app := &App{
         db: db,
+        igdb: igdb,
     }
     app.loadRoutes()
     return app, nil
