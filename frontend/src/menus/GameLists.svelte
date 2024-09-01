@@ -283,8 +283,9 @@
                 backlogSearch = [];
                 backlogSearchBar.value = '';
             }}
-            on:input={async (e) => {
-                igdbSearch = await GameAPI.searchIGDB(e.target.value);
+            on:keydown={async (e) => {
+                if (e.key == "Enter")
+                    igdbSearch = await GameAPI.searchIGDB(e.target.value);
             }}
             >
 

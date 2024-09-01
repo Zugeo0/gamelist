@@ -22,7 +22,7 @@ export type IGDBGame = {
     cover: string, // url
 };
 
-function fromResponse(game: any): Game {
+function gameFromResponse(game: any): Game {
     return {
         id: game.id,
         name: game.name,
@@ -38,7 +38,16 @@ function fromResponse(game: any): Game {
     };
 }
 
-function toRequest(game: Game): string {
+function igdbGameFromResponse(game: any): IGDBGame {
+    return {
+        id: game.id,
+        name: game.name,
+        description: game.summary,
+        cover: game.cover,
+    };
+}
+
+function gameToRequest(game: Game): string {
     return JSON.stringify({
         id: game.id,
         name: game.name,
@@ -117,12 +126,12 @@ export class GameAPI {
     static async add(game: Game): Promise<Game> {
         const response = await fetch(API_URL + "/games", {
             method: "POST",
-            body: toRequest(game),
+            body: gameToRequest(game),
         })
 
         validate(response, "Failed to add new game");
 
-        return fromResponse(await response.json());
+        return gameFromResponse(await response.json());
     }
 
     static async get(id: number): Promise<Game | null> {
@@ -130,7 +139,7 @@ export class GameAPI {
 
         validate(response, "Failed to fetch game by id");
 
-        return fromResponse(await response.json());
+        return gameFromResponse(await response.json());
     }
 
     static async front(list: GameList): Promise<Game | null> {
@@ -149,9 +158,7 @@ export class GameAPI {
         validate(response, "Failed to fetch games");
 
         const json = await response.json();
-        const games = json.map((game: any) => fromResponse(game))
-        console.log(games);
-        return games;
+        return json.map((game: any) => gameFromResponse(game));
     }
 
     static async backlog(): Promise<Game[]> {
@@ -170,7 +177,7 @@ export class GameAPI {
     static async put(game: Game) {
         const response = await fetch(API_URL + "/games", {
             method: "PUT",
-            body: toRequest(game),
+            body: gameToRequest(game),
         })
 
         validate(response, "Failed to update game");
@@ -247,9 +254,13 @@ export class GameAPI {
     }
 
     static async searchIGDB(search: string): Promise<IGDBGame[]> {
-        return GameAPI.igdbMock
-            .filter(game => game.name.toLowerCase().includes(search.toLowerCase()))
-            .filter(game => !GameAPI.games.find(found => found.igdbId === game.id))
+        const response = await fetch(API_URL + `/games/search/${search}`);
+
+        validate(response, "Failed to fetch games");
+
+        const json = await response.json();
+        console.log(json);
+        return json.map((game: any) => igdbGameFromResponse(game));
     }
 
     static async addIGDB(game: IGDBGame): Promise<Game> {

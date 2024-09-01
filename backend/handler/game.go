@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"backend/igdb"
 	"backend/model"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,6 +15,7 @@ import (
 
 type Game struct{
     DB *gorm.DB
+    Igdb *igdb.Client
 }
 
 func (o *Game) Create(w http.ResponseWriter, r *http.Request) {
@@ -82,5 +85,51 @@ func (o *Game) DeleteByID(w http.ResponseWriter, r *http.Request) {
     }
 
     o.DB.Delete(model.Game{}, id)
+}
+
+func (o *Game) Search(w http.ResponseWriter, r *http.Request) {
+    name := chi.URLParam(r, "name")
+
+    resp, err := o.Igdb.Post("/games", fmt.Sprintf("search \"%s\"; fields name,summary,cover.url;", name))
+    if err != nil {
+        log.Println(err)
+        w.WriteHeader(http.StatusInternalServerError)
+    }
+
+    games := []struct{
+        Id       int    `json:"id"`
+        Name     string `json:"name"`
+        Summary  string `json:"summary"`
+        Cover    struct {
+            Id  int `json:"id"`
+            Url string `json:"url"`
+        }`json:"cover"`
+    }{}
+    err = json.Unmarshal([]byte(resp), &games)
+    if err != nil {
+        log.Println(err)
+        w.WriteHeader(http.StatusInternalServerError)
+    }
+
+    type RespIgdbGame struct {
+        Id       int    `json:"id"`
+        Name     string `json:"name"`
+        Summary  string `json:"summary"`
+        Cover    string `json:"cover"`
+    }
+
+    respGames := []RespIgdbGame{ }
+
+    for _, game := range games {
+        respGames = append(respGames, RespIgdbGame{
+            Id: game.Id,
+            Name: game.Name,
+            Summary: game.Summary,
+            Cover: game.Cover.Url,
+        })
+    }
+
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(respGames)
 }
 

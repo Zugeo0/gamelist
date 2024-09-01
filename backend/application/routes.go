@@ -39,6 +39,7 @@ func (app *App) loadApiRoutes(router chi.Router) {
 func (app *App) loadGameRoutes(router chi.Router) {
     gameHandler := &handler.Game{
         DB: app.db,
+        Igdb: app.igdb,
     }
 
     router.Post("/", gameHandler.Create)
@@ -46,6 +47,7 @@ func (app *App) loadGameRoutes(router chi.Router) {
     router.Put("/", gameHandler.Put)
     router.Get("/{id}", gameHandler.GetByID)
     router.Delete("/{id}", gameHandler.DeleteByID)
+    router.Get("/search/{name}", gameHandler.Search)
 }
 
 func (app *App) loadGameListRoutes(router chi.Router) {
