@@ -1,5 +1,5 @@
 
-import { GameAPI } from "./Games";
+import { API_URL, validate } from "./Common";
 
 export type GameList = {
     id: number,
@@ -7,53 +7,51 @@ export type GameList = {
 };
 
 export class GameListAPI {
-    static nextId: number = 2;
-    static lists: GameList[] = [
-        {
-            id: 0,
-            name: "Main",
-        },
-        {
-            id: 1,
-            name: "Side",
-        }
-    ];
-
     static async add(list: GameList) {
-        let newList = {...list};
-        newList.id = GameListAPI.nextId++;
-        GameListAPI.lists.push(newList);
+        const response = await fetch(API_URL + "/lists", { 
+            method: "POST", 
+            body: JSON.stringify({
+                name: list.name,
+            }),
+        });
+
+        validate(response, "Failed to add new game list");
     }
 
     static async get(id: number): Promise<GameList | null> {
-        let list = GameListAPI.lists.find(list => list.id === id) ?? null;
+        const response = await fetch(API_URL + `/lists/${id}`);
 
-        if (list)
-            list = {...list};
+        validate(response, "Failed to fetch game list by id");
 
-        return list;
+        return await response.json();
     }
 
     static async all(): Promise<GameList[]> {
-        return [...GameListAPI.lists.map(list => { return {...list} })];
+        const response = await fetch(API_URL + "/lists");
+
+        validate(response, "Failed to fetch game lists");
+
+        return await response.json();
     }
 
     static async put(list: GameList) {
-        let newList = {...list};
-        GameListAPI.lists = GameListAPI.lists.filter(l => l.id !== list.id);
-        GameListAPI.lists.push(newList);
-        GameListAPI.lists.sort((a, b) => a.id - b.id);
+        const response = await fetch(API_URL + "/lists", { 
+            method: "PUT", 
+            body: JSON.stringify({
+                id: list.id,
+                name: list.name,
+            }),
+        });
+
+        validate(response, "Failed to update game list");
     }
 
     static async remove(id: number) {
-        const list = GameListAPI.lists.find(list => list.id === id);
+        const response = await fetch(API_URL + `/lists/${id}`, { 
+            method: "DELETE", 
+        });
 
-        if (!list) {
-            return;
-        }
-
-        GameListAPI.lists = GameListAPI.lists.filter(list => list.id !== id);
-        GameAPI.removeFromList(list);
+        validate(response, "Failed to remove game list");
     }
 }
 
