@@ -38,7 +38,7 @@
 
                 <p class="text-surface0 line-clamp-3 group-hover:line-clamp-1">{game.description}</p>
 
-                <div class="toolbar opacity-0 group-hover:opacity-100 mt-auto">
+                <div class="toolbar hidden group-hover:flex mt-auto">
 
                     <!-- Move game to list button -->
                     <button 
