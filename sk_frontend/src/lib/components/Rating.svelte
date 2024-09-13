@@ -28,7 +28,7 @@
 
 </script>
 
-<div class={twMerge("flex flex-row", className, interactable || "pointer-events-none")}>
+<div class={twMerge("flex flex-row", className, !interactable && "pointer-events-none")}>
 
     <!-- Highlighted stars -->
     {#each Array(rating) as _, i}

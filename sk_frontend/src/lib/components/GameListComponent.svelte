@@ -3,10 +3,10 @@
 
     import { dndzone, type DndEvent } from "svelte-dnd-action";
     import { flip } from "svelte/animate";
-    import { GameAPI, type Game } from "../api/Games";
+    import { GameAPI, type Game } from "$lib/api/Games";
     import { twMerge } from "tailwind-merge";
     import { onMount, createEventDispatcher } from "svelte";
-    import { type GameList } from "../api/GameLists";
+    import { type GameList } from "$lib/api/GameLists";
 
     const flipDurationMs = 50;
 

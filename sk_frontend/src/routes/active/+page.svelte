@@ -3,11 +3,11 @@
     import { GameListAPI, type GameList } from "$lib/api/GameLists"; 
     import { GameAPI, type Game } from "$lib/api/Games";
     import Icon from "@iconify/svelte";
-    import Rating from "$lib/Rating.svelte";
+    import Rating from "$lib/components/Rating.svelte";
     import { onMount } from "svelte";
-    import Modal from "$lib/Modal.svelte";
-    import ConfirmationModal from "$lib/ConfirmationModal.svelte";
-    import EditGameModal from "$lib/EditGameModal.svelte";
+    import Modal from "$lib/components/Modal.svelte";
+    import ConfirmationModal from "$lib/components/ConfirmationModal.svelte";
+    import EditGameModal from "$lib/components/EditGameModal.svelte";
     import { formatDate } from "$lib/utils";
     import { goto } from "$app/navigation";
     let lists: GameList[] | null = null;

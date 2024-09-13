@@ -33,6 +33,7 @@
 		"@fontsource-variable/exo": "^5.1.0",
 		"@fontsource/lalezar": "^5.1.0",
 		"@iconify/svelte": "^4.0.2",
+		"svelte-dnd-action": "^0.9.50",
 		"tailwind-merge": "^2.5.2"
 	}
 }

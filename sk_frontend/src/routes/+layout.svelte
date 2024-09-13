@@ -1,7 +1,7 @@
 <script lang="ts">
-    import Navbar from '$lib/navbar/Navbar.svelte';
-    import NavbarLink from '$lib/navbar/NavbarLink.svelte';
-    import NavbarSeparator from '$lib/navbar/NavbarSeparator.svelte';
+    import Navbar from '$lib/components/navbar/Navbar.svelte';
+    import NavbarLink from '$lib/components/navbar/NavbarLink.svelte';
+    import NavbarSeparator from '$lib/components/navbar/NavbarSeparator.svelte';
 
     import "../app.css";
 
