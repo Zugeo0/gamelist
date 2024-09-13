@@ -29,6 +29,10 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@catppuccin/tailwindcss": "^0.1.6"
+		"@catppuccin/tailwindcss": "^0.1.6",
+		"@fontsource-variable/exo": "^5.1.0",
+		"@fontsource/lalezar": "^5.1.0",
+		"@iconify/svelte": "^4.0.2",
+		"tailwind-merge": "^2.5.2"
 	}
 }
