@@ -1,0 +1,37 @@
+services:
+  frontend:
+    image: gamelist-frontend
+    build: ./frontend
+    environment:
+      - PUBLIC_API_URL=http://localhost:4000/api
+    ports:
+      - 80:3000
+    depends_on:
+      - backend
+    links:
+      - backend
+  
+  backend:
+    image: gamelist-backend
+    build: ./backend
+    environment:
+      - IGDB_ACCESS_KEY=ACCESS_KEY
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+    ports:
+      - 4000:4000
+    depends_on:
+      - db
+    links:
+      - db
+  
+  db:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    

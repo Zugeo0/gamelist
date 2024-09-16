@@ -1,6 +1,6 @@
 
 import { validate } from "./Common";
-import { PUBLIC_API_URL } from "$env/static/public";
+import { env } from "$env/dynamic/public";
 
 export type GameList = {
     id: number,
@@ -9,7 +9,7 @@ export type GameList = {
 
 export class GameListAPI {
     static async add(list: GameList) {
-        const response = await fetch(PUBLIC_API_URL + "/lists", { 
+        const response = await fetch(env.PUBLIC_API_URL + "/lists", { 
             method: "POST", 
             body: JSON.stringify({
                 name: list.name,
@@ -20,7 +20,7 @@ export class GameListAPI {
     }
 
     static async get(id: number): Promise<GameList | null> {
-        const response = await fetch(PUBLIC_API_URL + `/lists/${id}`);
+        const response = await fetch(env.PUBLIC_API_URL + `/lists/${id}`);
 
         validate(response, "Failed to fetch game list by id");
 
@@ -28,7 +28,7 @@ export class GameListAPI {
     }
 
     static async all(): Promise<GameList[]> {
-        const response = await fetch(PUBLIC_API_URL + "/lists");
+        const response = await fetch(env.PUBLIC_API_URL + "/lists");
 
         validate(response, "Failed to fetch game lists");
 
@@ -36,7 +36,7 @@ export class GameListAPI {
     }
 
     static async put(list: GameList) {
-        const response = await fetch(PUBLIC_API_URL + "/lists", { 
+        const response = await fetch(env.PUBLIC_API_URL + "/lists", { 
             method: "PUT", 
             body: JSON.stringify({
                 id: list.id,
@@ -48,7 +48,7 @@ export class GameListAPI {
     }
 
     static async remove(id: number) {
-        const response = await fetch(PUBLIC_API_URL + `/lists/${id}`, { 
+        const response = await fetch(env.PUBLIC_API_URL + `/lists/${id}`, { 
             method: "DELETE", 
         });
 

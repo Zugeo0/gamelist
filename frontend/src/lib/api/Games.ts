@@ -1,5 +1,5 @@
 import { validate } from "./Common";
-import { PUBLIC_API_URL } from "$env/static/public";
+import { env } from "$env/dynamic/public";
 import type { GameList } from "./GameLists";
 
 export type Game = {
@@ -66,7 +66,7 @@ function gameToRequest(game: Game): string {
 
 export class GameAPI {
     static async add(game: Game): Promise<Game> {
-        const response = await fetch(PUBLIC_API_URL + "/games", {
+        const response = await fetch(env.PUBLIC_API_URL + "/games", {
             method: "POST",
             body: gameToRequest(game),
         })
@@ -77,7 +77,7 @@ export class GameAPI {
     }
 
     static async get(id: number): Promise<Game | null> {
-        const response = await fetch(PUBLIC_API_URL + `/games/${id}`);
+        const response = await fetch(env.PUBLIC_API_URL + `/games/${id}`);
 
         validate(response, "Failed to fetch game by id");
 
@@ -95,7 +95,7 @@ export class GameAPI {
     }
 
     static async all(): Promise<Game[]> {
-        const response = await fetch(PUBLIC_API_URL + `/games`);
+        const response = await fetch(env.PUBLIC_API_URL + `/games`);
 
         validate(response, "Failed to fetch games");
 
@@ -117,7 +117,7 @@ export class GameAPI {
     }
 
     static async put(game: Game) {
-        const response = await fetch(PUBLIC_API_URL + "/games", {
+        const response = await fetch(env.PUBLIC_API_URL + "/games", {
             method: "PUT",
             body: gameToRequest(game),
         })
@@ -126,7 +126,7 @@ export class GameAPI {
     }
 
     static async remove(id: number) {
-        const response = await fetch(PUBLIC_API_URL + `/games/${id}`, {
+        const response = await fetch(env.PUBLIC_API_URL + `/games/${id}`, {
             method: "DELETE",
         })
 
@@ -196,7 +196,7 @@ export class GameAPI {
     }
 
     static async searchIGDB(search: string): Promise<IGDBGame[]> {
-        const response = await fetch(PUBLIC_API_URL + `/games/search/${search}`);
+        const response = await fetch(env.PUBLIC_API_URL + `/games/search/${search}`);
 
         validate(response, "Failed to fetch games");
 
