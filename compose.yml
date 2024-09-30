@@ -10,15 +10,17 @@ services:
       - backend
     links:
       - backend
-  
+
   backend:
     image: gamelist-backend
     build: ./backend
     environment:
-      - IGDB_ACCESS_KEY=ACCESS_KEY
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=postgres
+      - IGDB_USERID=${IGDB_USERID}
+      - IGDB_ACCESS_KEY=${IGDB_ACCESS_KEY}
+      - IGDB_SECRET=${IGDB_SECRET}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
       - DB_HOST=db
       - DB_PORT=5432
     ports:
@@ -27,11 +29,12 @@ services:
       - db
     links:
       - db
-  
+
   db:
     image: postgres:latest
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=postgres
-    
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - 5432:5432

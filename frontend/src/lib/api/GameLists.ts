@@ -9,8 +9,8 @@ export type GameList = {
 
 export class GameListAPI {
     static async add(list: GameList) {
-        const response = await fetch(env.PUBLIC_API_URL + "/lists", { 
-            method: "POST", 
+        const response = await fetch(env.PUBLIC_API_URL + "/lists", {
+            method: "POST",
             body: JSON.stringify({
                 name: list.name,
             }),
@@ -36,8 +36,8 @@ export class GameListAPI {
     }
 
     static async put(list: GameList) {
-        const response = await fetch(env.PUBLIC_API_URL + "/lists", { 
-            method: "PUT", 
+        const response = await fetch(env.PUBLIC_API_URL + "/lists", {
+            method: "PUT",
             body: JSON.stringify({
                 id: list.id,
                 name: list.name,
@@ -48,8 +48,8 @@ export class GameListAPI {
     }
 
     static async remove(id: number) {
-        const response = await fetch(env.PUBLIC_API_URL + `/lists/${id}`, { 
-            method: "DELETE", 
+        const response = await fetch(env.PUBLIC_API_URL + `/lists/${id}`, {
+            method: "DELETE",
         });
 
         validate(response, "Failed to remove game list");

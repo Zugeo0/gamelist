@@ -3,8 +3,7 @@
     import NavbarLink from '$lib/components/navbar/NavbarLink.svelte';
     import NavbarSeparator from '$lib/components/navbar/NavbarSeparator.svelte';
 
-    import "../app.css";
-
+    import '../app.css';
 </script>
 
 <main class="flex flex-row absolute inset-0 select-none">
@@ -12,7 +11,7 @@
         <NavbarLink
             label="Active Games"
             icon="ion:game-controller"
-            route="/"
+            route="/active"
         />
         <NavbarSeparator label="Games" />
         <NavbarLink
@@ -44,4 +43,3 @@
     </Navbar>
     <slot />
 </main>
-
