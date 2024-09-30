@@ -104,21 +104,19 @@ func (o *Game) Search(w http.ResponseWriter, r *http.Request) {
 	name := chi.URLParam(r, "name")
 
 	// Don't worry about sql injection. it's fine :)
-	resp, err := o.Igdb.Post("/games", fmt.Sprintf("search \"%s\"; fields name,summary,cover.url;", name))
+	resp, err := o.Igdb.Post("/games", fmt.Sprintf("search \"%s\"; fields name,summary,cover.image_id;", name))
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-
-	log.Println(resp)
 
 	games := []struct {
 		Id      int    `json:"id"`
 		Name    string `json:"name"`
 		Summary string `json:"summary"`
 		Cover   struct {
-			Id  int    `json:"id"`
-			Url string `json:"url"`
+			Id      int    `json:"id"`
+			ImageId string `json:"image_id"`
 		} `json:"cover"`
 	}{}
 	err = json.Unmarshal([]byte(resp), &games)
@@ -141,7 +139,7 @@ func (o *Game) Search(w http.ResponseWriter, r *http.Request) {
 			Id:      game.Id,
 			Name:    game.Name,
 			Summary: game.Summary,
-			Cover:   game.Cover.Url,
+			Cover:   fmt.Sprintf("https://images.igdb.com/igdb/image/upload/t_cover_big/%v.jpg", game.Cover.ImageId),
 		})
 	}
 
